@@ -7,7 +7,6 @@ datasource db {
   url      = env("POSTGRES_URL")
 }
 
-// 아직 구현 안함
 model overtimes {
   id          Int       @id @default(autoincrement())
   giver_id    String    @db.VarChar(11)
@@ -20,18 +19,13 @@ model overtimes {
   ended_at    DateTime  @db.Timestamp(0)
 }
 
-// 권한
 model permissions {
   id          Int      @id @default(autoincrement())
-  // 군번
   soldiers_id String   @db.VarChar(11)
-  // 회원가입 날짜
   created_at  DateTime @default(now()) @db.Timestamp(0)
-  // 권한 종류 (Notion 참조)
   value       String   @db.VarChar(50)
 }
 
-// 상벌점
 model points {
   id                 Int       @id @default(autoincrement())
   // 상벌점 부여한 간부 군번
@@ -62,59 +56,36 @@ model points {
   disapproved_reason String?   @db.VarChar(1000)
 }
 
-// 상벌점 템플릿 (예: 병기본 우수, ...)
 model point_templates {
   id      Int     @id @default(autoincrement())
-  // 상점
   merit   Int?    @db.SmallInt
-  // 벌점
   demerit Int?    @db.SmallInt
-  // 템플릿 사용할 중대
   unit    String? @db.VarChar(10)
-  // 템플릿 내용
   reason  String  @db.VarChar(1000)
 }
 
-// 사용한 상벌점
 model used_points {
   id          Int      @id @default(autoincrement())
-  // 상벌점 사용 
   recorded_by String   @db.VarChar(11)
-  // 상벌점 사용한 용사
   user_id     String   @db.VarChar(11)
-  // 신청한 날짜
   created_at  DateTime @default(now()) @db.Timestamp(0)
-  // 사용한 상점
   value       Int      @db.SmallInt
-  // 사용 이유 (예: 휴가)
   reason      String?  @db.VarChar(1000)
 }
 
-// 용사/간부
 model soldiers {
-  // 군번
   sn          String        @id @unique @db.VarChar(11)
-  // 이름
   name        String        @db.VarChar(20)
-  // 회원가입 날짜
   created_at  DateTime      @default(now()) @db.Timestamp(0)
-  // hashed 비밀번호
   password    String        @db.VarChar(200)
-  // 회원가입 승인 날짜
   verified_at DateTime?     @db.Timestamp(0)
-  // 용사 타입 (용사, 간부)
   type        soldiers_type
-  // 삭제된 날짜
   deleted_at  DateTime?     @db.Timestamp(0)
-  // 회원가입 반려날짜
   rejected_at DateTime?     @db.Timestamp(0)
-  // 회원가입 반려한 간부 군번
   deleted_by  String?       @db.VarChar(36)
 }
 
 enum soldiers_type {
-  // 용사
   enlisted
-  // 간부
   nco
 }

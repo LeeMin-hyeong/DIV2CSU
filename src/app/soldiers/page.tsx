@@ -136,7 +136,7 @@ export default function MyProfilePage({
   return (
     <div className='flex flex-1 flex-col py-2 px-3'>
       <div className='flex flex-row items-center'>
-        <div>
+        <div className='flex flex-col'>
           <span>유형</span>
           <Select
             disabled

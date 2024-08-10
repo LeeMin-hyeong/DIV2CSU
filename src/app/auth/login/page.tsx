@@ -23,24 +23,18 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div
-      className='container pt-7 pb-5'
-      style={styles.container}
-    >
-      <div className='flex flex-col items-center mb-5'>
-        <Image
-          priority
-          className='w-40'
-          width={400}
-          height={400}
-          src='https://upload.wikimedia.org/wikipedia/commons/0/0f/Flag_of_South_Korea.png'
-          alt='Divison Logo'
-        />
-        <h1 className='mt-5 text-center font-black text-3xl'>병영생활 관리</h1>
-      </div>
+    <div className='w-full h-dvh flex flex-col items-center justify-center gap-10'>
+      <Image
+        priority
+        width={250}
+        height={250}
+        src='/images/flag.svg'
+        alt='Divison Logo'
+      />
+      <h1 className='text-center font-black text-3xl'>병영생활 관리</h1>
       <Form
         onFinish={onSubmit}
-        className='flex flex-col w-2/3 mt-5'
+        className='flex flex-col gap-2 w-full max-w-sm'
       >
         <Form.Item<string>
           name='sn'
@@ -76,7 +70,7 @@ export default function LoginPage() {
         >
           로그인
         </Button>
-        <div className='flex flex-row mt-3'>
+        <div className='flex flex-row mt-3 justify-center'>
           <Link
             href='/auth/forgotPassword'
             className='text-blue-300'
@@ -95,19 +89,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    minHeight: '-webkit-fill-available',
-    overflow: 'hidden',
-  },
-  textinput: {
-    outline: 'none',
-    border: 'none',
-  },
-};

@@ -56,6 +56,7 @@ export async function fetchPendingPoints() {
     .selectFrom('points')
     .where('giver_id', '=', sn!)
     .where('verified_at', 'is', null)
+    .where('rejected_at', 'is', null)
     .selectAll()
     .execute();
 }
@@ -203,6 +204,7 @@ export async function fetchPointSummary(sn: string) {
       .executeTakeFirst(),
     pointsQuery
       .where('value', '<', 0)
+      .where('verified_at', 'is not', null) // 승인된 상벌점만 가져오도록 수정
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
     usedPointsQuery
@@ -216,6 +218,7 @@ export async function fetchPointSummary(sn: string) {
     usedMerit: parseInt(usedMeritData?.value ?? '0', 10),
   };
 }
+
 
 export async function createPoint({
   value,

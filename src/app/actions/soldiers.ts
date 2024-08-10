@@ -75,6 +75,7 @@ export async function listUnverifiedSoldiers() {
     .selectFrom('soldiers')
     .select(['sn', 'name', 'type'])
     .where('verified_at', 'is', null)
+    .where('rejected_at', 'is', null)
     .execute();
   return { message: null, data };
 }
@@ -135,7 +136,7 @@ export async function listSoldiers({
       )
       .limit(10)
       .$if(page != null, (qb) => qb.offset(Math.max(1, page!) * 10 - 10))
-      .select(['sn', 'name', 'type'])
+      .select(['sn', 'name', 'type', 'deleted_at', 'rejected_at'])
       .execute(),
   ]);
   return { count: parseInt(count, 10), data };

@@ -10,7 +10,6 @@ export default async function ManageSignUpPage() {
     return (
       <div className='py-5 my-5'>
         <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={<p>회원 가입 요청이 없습니다</p>}
         />
       </div>

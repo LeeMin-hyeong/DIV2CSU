@@ -9,7 +9,6 @@ export async function PointApproveList() {
     return (
       <div className='py-5 my-5'>
         <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={<p>요청된 최종 승인이 없습니다</p>}
         />
       </div>
