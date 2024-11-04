@@ -9,7 +9,7 @@ export async function PointRequestList() {
     return (
       <div className='py-5 my-5'>
         <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          // image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={<p>요청된 상벌점이 없습니다</p>}
         />
       </div>
