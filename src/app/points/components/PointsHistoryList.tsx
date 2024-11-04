@@ -11,7 +11,6 @@ export async function PointsHistoryList({
     return (
       <div className='py-5 my-5'>
         <Empty
-          // image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
             <p>
               {type === 'enlisted'
