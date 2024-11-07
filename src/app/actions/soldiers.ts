@@ -142,12 +142,32 @@ export async function listSoldiers({
   return { count: parseInt(count, 10), data };
 }
 
-export async function searchPointsReceiver(query: string) {
+export async function searchEnlisted(query: string) {
   return kysely
     .selectFrom('soldiers')
     .where((eb) =>
       eb.and([
         eb('type', '=', 'enlisted'),
+        eb.or([
+          eb('sn', 'like', `%${query}%`),
+          eb('name', 'like', `%${query}%`),
+        ]),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
+        ]),
+      ]),
+    )
+    .select(['sn', 'name'])
+    .execute();
+}
+
+export async function searchNco(query: string) {
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb('type', '=', 'nco'),
         eb.or([
           eb('sn', 'like', `%${query}%`),
           eb('name', 'like', `%${query}%`),

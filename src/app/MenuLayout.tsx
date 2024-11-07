@@ -161,6 +161,38 @@ export function MenuLayout({
               ],
             },
             {
+              key: '/overtimes/#',
+              label: '초과근무',
+              icon: <LikeOutlined />,
+              children: [
+                {
+                  key: '/overtimes',
+                  label: '초과근무 관리',
+                  icon: <ContainerOutlined />,
+                  onClick,
+                },
+
+                data.type === 'enlisted' ?
+                {
+                  key: '/overtimes/request',
+                  label: '초과근무 요청',
+                  icon: <MailOutlined />,
+                  onClick,
+                } : null,
+
+                hasPermission(data.permissions, [
+                  'Admin',
+                  'Commander',
+                ]) ?
+                {
+                  key: '/overtimes/redeem',
+                  label: '초과근무 사용',
+                  icon: <DeleteOutlined />,
+                  onClick,
+                } : null,
+              ],
+            },
+            {
               key: '/auth/logout',
               label: '로그아웃',
               icon: <UnlockOutlined />,

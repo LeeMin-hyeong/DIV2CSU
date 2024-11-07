@@ -1,58 +1,58 @@
 'use client';
 
-import { deletePoint, fetchPoint } from '@/app/actions';
+import { deleteOvertime, fetchOvertime } from '@/app/actions';
 import { ArrowRightOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Card, Popconfirm, Skeleton, message } from 'antd';
 import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useCallback, useLayoutEffect, useState } from 'react';
 
-export type PointCardProps = {
-  pointId: number;
+export type OvertimeCardProps = {
+  overtimeId: number;
 };
 
-export function PointCard({ pointId }: PointCardProps) {
+export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
   const router = useRouter();
-  const [point, setPoint] = useState<
-    Awaited<ReturnType<typeof fetchPoint>> | undefined
+  const [overtime, setPoint] = useState<
+    Awaited<ReturnType<typeof fetchOvertime>> | undefined
   >(undefined);
   const [deleted, setDeleted] = useState(false);
 
   const onDelete = useCallback(() => {
-    deletePoint(pointId).then(({ message: newMessage }) => {
+    deleteOvertime(overtimeId).then(({ message: newMessage }) => {
       if (newMessage == null) {
         message.success('삭제하였습니다');
         setDeleted(true);
-        router.refresh();
+        router.push('/overtimes')
       } else {
         message.error(newMessage);
       }
     });
-  }, [pointId]);
+  }, [overtimeId]);
 
   useLayoutEffect(() => {
-    fetchPoint(pointId).then((data) => {
+    fetchOvertime(overtimeId).then((data) => {
       setPoint(data);
     });
-  }, [pointId]);
+  }, [overtimeId]);
 
   const backgroundColor = (() => {
-    if (point == null) {
+    if (overtime == null) {
       return undefined;
     }
-    if (point.approved_at) {
-      if (point.value < 0) {
+    if (overtime.approved_at) {
+      if (overtime.value < 0) {
         return '#ff4a4a'
       }
       return '#98e39a'
     }
-    if (point.verified_at) {
-      if (point.value < 0) {
+    if (overtime.verified_at) {
+      if (overtime.value < 0) {
         return '#ed8429';
       }
       return '#A7C0FF';
     }
-    if (point.rejected_at || point.rejected_reason || point.disapproved_at || point.disapproved_reason) {
+    if (overtime.rejected_at || overtime.rejected_reason || overtime.disapproved_at || overtime.disapproved_reason) {
       return '#ED2939';
     }
     return '#D9D9D9';
@@ -65,16 +65,16 @@ export function PointCard({ pointId }: PointCardProps) {
       size='small'
       style={{ backgroundColor }}
       title={
-        point != null ? (
+        overtime != null ? (
           <div className='flex flex-row justify-between items-center'>
             <div className='flex flex-row align-middle'>
-              <p>{point.giver}</p>
+              <p>{overtime.giver}</p>
               <ArrowRightOutlined className='mx-2' />
-              <p>{point.receiver}</p>
+              <p>{overtime.receiver}</p>
               <p className='mx-2' />
-              <p>(승인자 : {point.commander})</p>
+              <p>(확인관 : {overtime.approver})</p>
             </div>
-            <p>{`${point?.value ?? 0}점`}</p>
+            <p>{`${Math.floor(overtime?.value/60)}시간 ${overtime?.value%60}분`}</p>
           </div>
         ) : null
       }
@@ -82,23 +82,19 @@ export function PointCard({ pointId }: PointCardProps) {
       <Skeleton
         active
         paragraph={{ rows: 0 }}
-        loading={point == null}
+        loading={overtime == null}
       >
         <div className='flex flex-row'>
           <div className='flex-1'>
-            {point?.rejected_reason && (
-              <p>반려 사유: {point?.rejected_reason}</p>
+            {overtime?.rejected_reason && (
+              <p>반려 사유: {overtime?.rejected_reason}</p>
             )}
             <p>
-              {point?.given_at
-                ? moment(point.given_at).local().format('YYYY년 MM월 DD일')
-                : null}
+              {moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ {moment(overtime?.ended_at).local().format('YYYY년 MM월 DD일 HH:mm')}
             </p>
-            <p>{point?.reason}</p>
+            <p>{overtime?.reason}</p>
           </div>
-          {point?.rejected_at ||
-          point?.verified_at ||
-          point?.rejected_reason ? null : (
+          {overtime?.verified_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'

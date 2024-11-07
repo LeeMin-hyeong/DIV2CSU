@@ -112,7 +112,7 @@ export async function signIn({
   });
   revalidatePath('/', 'layout');
   // 로그인 완료 시 연결 위치
-  redirect('/points');
+  redirect('/');
 }
 
 const SignUpParams = Soldier.pick({

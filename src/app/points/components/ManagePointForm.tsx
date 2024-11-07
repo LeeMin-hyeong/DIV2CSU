@@ -3,7 +3,7 @@
 import {
   createPoint,
   searchPointsGiver,
-  searchPointsReceiver,
+  searchEnlisted,
   searchCommander,
 } from '@/app/actions';
 import {
@@ -68,7 +68,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
         setSoldierOptions(value as any);
       });
     } else {
-      searchPointsReceiver(soldierQuery || '').then((value) => {
+      searchEnlisted(soldierQuery || '').then((value) => {
         setSearching(false);
         setSoldierOptions(value as any);
       });

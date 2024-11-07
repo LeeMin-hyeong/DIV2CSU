@@ -350,6 +350,8 @@ export async function redeemPoint({
       kysely
         .selectFrom('points')
         .where('receiver_id', '=', userId)
+        .where('verified_at', 'is not', null)
+        .where('approved_at', 'is not', null)
         .select(({ fn }) =>
           fn
             .coalesce(fn.sum<string>('points.value'), sql<string>`0`)
