@@ -2,9 +2,11 @@ import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { Divider, FloatButton } from 'antd';
 import { currentSoldier, fetchSoldier, listPoints } from '../actions';
+import { hasPermission } from '../actions/utils';
 import {
   PointListPagination,
   PointRequestList,
+  PointApproveList,
   PointsHistoryList,
   TotalPointBox,
   UsedPointsHorizontalList,
@@ -74,6 +76,51 @@ async function NcoPage({
   );
 }
 
+async function CommanderPage({
+  user,
+  page,
+  showRequest,
+}: {
+  user: Soldier;
+  page: number;
+  showRequest: boolean;
+}) {
+  const { data, count } = await listPoints(user?.sn, page);
+
+  return (
+    <div className='flex flex-1 flex-col'>
+      <div className='flex-1 mb-2'>
+        {showRequest && (
+          <>
+            <PointApproveList />
+            <Divider />
+          </>
+        )}
+        {showRequest && (
+          <>
+            <PointRequestList />
+            <Divider />
+          </>
+        )}
+        <PointsHistoryList
+          type={user.type}
+          data={data}
+        />
+      </div>
+      <Divider />
+      <PointListPagination
+        sn={user.sn}
+        total={count}
+        page={page}
+      />
+      <FloatButton
+        icon={<PlusOutlined />}
+        href='/points/give'
+      />
+    </div>
+  )
+}
+
 export default async function ManagePointsPage({
   searchParams,
 }: {
@@ -92,6 +139,15 @@ export default async function ManagePointsPage({
         page={page}
       />
     );
+  }
+  if (hasPermission(profile.permissions, ['Admin', 'Commander'])){
+    return (
+      <CommanderPage
+        user={user as any}
+        page={page}
+        showRequest={profile.sn === user.sn}
+      />
+    )
   }
   return (
     <NcoPage

@@ -12,6 +12,10 @@ export const ALL_PERMISSIONS: {
     title: '관리자',
     disabled: true,
   },
+  Commander: {
+    key: 'Commander',
+    title: '지휘관',
+  },
   UserAdmin: {
     key: 'UserAdmin',
     title: '유저 관리자',

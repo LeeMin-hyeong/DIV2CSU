@@ -67,7 +67,7 @@ export async function signIn({
             .select(['value', 'verified_at'])
             .whereRef('permissions.soldiers_id', '=', 'soldiers.sn'),
         ).as('permissions'),
-      ])
+      ] as any)
       .executeTakeFirstOrThrow();
   } catch (e) {
     if (e instanceof NoResultError) {
@@ -111,7 +111,8 @@ export async function signIn({
     path: '/',
   });
   revalidatePath('/', 'layout');
-  redirect('/');
+  // 로그인 완료 시 연결 위치
+  redirect('/points');
 }
 
 const SignUpParams = Soldier.pick({
