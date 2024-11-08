@@ -2,11 +2,13 @@
 
 import { resetPassword } from '@/app/actions';
 import { App, Button, Form, FormInstance, Input } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 
-export type PasswordFormProps = { sn: string };
+export type PasswordFormProps = { sn: string, force: boolean };
 
-export function PasswordForm({ sn }: PasswordFormProps) {
+export function PasswordForm({ sn, force }: PasswordFormProps) {
+  const router = useRouter();
   const formRef = useRef<FormInstance | null>(null);
   const { notification } = App.useApp();
   const [mutating, setMutating] = useState(false);
@@ -14,7 +16,7 @@ export function PasswordForm({ sn }: PasswordFormProps) {
   const handlePasswordForm = useCallback(() => {
     resetPassword({
       sn,
-      oldPassword: formRef.current?.getFieldValue('password') as string,
+      oldPassword: force ? sn : formRef.current?.getFieldValue('password') as string,
       newPassword: formRef.current?.getFieldValue('newPassword') as string,
       confirmation: formRef.current?.getFieldValue(
         'newPasswordConfirmation',
@@ -29,6 +31,9 @@ export function PasswordForm({ sn }: PasswordFormProps) {
       })
       .finally(() => {
         setMutating(false);
+        if(force){
+          router.push('/');
+        }
       });
   }, [notification, sn]);
 
@@ -38,13 +43,14 @@ export function PasswordForm({ sn }: PasswordFormProps) {
       ref={formRef}
       onFinish={handlePasswordForm}
     >
-      <Form.Item
+      {force ? null : <Form.Item
         label='현재 비밀번호'
         name='password'
         required
       >
         <Input.Password />
-      </Form.Item>
+      </Form.Item>}
+      
       <Form.Item
         label='새 비밀번호'
         name='newPassword'

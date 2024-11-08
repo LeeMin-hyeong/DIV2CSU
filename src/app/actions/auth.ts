@@ -111,6 +111,9 @@ export async function signIn({
     path: '/',
   });
   revalidatePath('/', 'layout');
+  if(password == sn){
+    redirect('/soldiers/resetpassword')
+  }
   redirect('/');
 }
 
@@ -252,8 +255,8 @@ export async function resetPasswordForce(sn: string) {
   if (current.sn === sn) {
     return { message: '본인 비밀번호는 초기화 할 수 없습니다', password: null };
   }
-  // 랜덤 비밀번호 생성
-  const password = randomBytes(6).toString('hex');
+  // 사용자 군번으로 비밀번호 초기화
+  const password = sn;
   const salt = randomBytes(24).toString('base64');
   const hashed = pbkdf2Sync(password, salt, 104906, 64, 'sha256').toString(
     'base64',
@@ -264,7 +267,6 @@ export async function resetPasswordForce(sn: string) {
       .where('sn', '=', sn)
       .set({ password: salt + hashed })
       .executeTakeFirstOrThrow();
-      console.log('새 비밀번호:', password);
     return { password, message: null };
   } catch (e) {
     return { password: null, message: '비밀번호 초기화에 실패했습니다' };
