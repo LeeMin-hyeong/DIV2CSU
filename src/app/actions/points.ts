@@ -61,6 +61,52 @@ export async function fetchPendingPoints() {
     .execute();
 }
 
+export async function fetchPointsCountsNco() {
+  const { sn } = await currentSoldier();
+  const query = kysely
+    .selectFrom('points')
+    .where('giver_id', '=', sn!)
+  const [{ verified }, { pending }, { rejected }] = await Promise.all([
+    query
+    .where('verified_at', 'is not', null)
+    .select((eb) => eb.fn.count<number>('id').as('verified'))
+    .executeTakeFirstOrThrow(),
+    query
+      .where('verified_at', 'is', null)
+      .where('rejected_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('pending'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where('rejected_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('rejected'))
+      .executeTakeFirstOrThrow(),
+    ]);
+  return { verified, pending, rejected };
+}
+
+export async function fetchPointsCountsEnlisted() {
+  const { sn } = await currentSoldier();
+  const query = kysely
+    .selectFrom('points')
+    .where('receiver_id', '=', sn!)
+  const [{ verified }, { pending }, { rejected }] = await Promise.all([
+    query
+      .where('verified_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('verified'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where('verified_at', 'is', null)
+      .where('rejected_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('pending'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where('rejected_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('rejected'))
+      .executeTakeFirstOrThrow(),
+    ]);
+  return { verified, pending, rejected };
+}
+
 export async function fetchApprovePoints() {
   const { sn } = await currentSoldier();
   return kysely
@@ -70,6 +116,7 @@ export async function fetchApprovePoints() {
     .where('approved_at', 'is', null)
     .selectAll()
     .execute();
+
 }
 
 export async function deletePoint(pointId: number) {
