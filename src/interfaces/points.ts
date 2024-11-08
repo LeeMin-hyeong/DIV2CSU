@@ -7,10 +7,13 @@ export const Point = z.object({
   giver_id: z.string(),
   // 상벌점을 받은 사용자 ID
   receiver_id: z.string(),
+  commander_id: z.string(),
   // 상벌점 데이터 생성일
   created_at: z.date(),
   // 상벌점 검증일
   verified_at: z.date().nullable(),
+  // 상벌점 승인일
+  approved_at: z.date().nullable(),
   // 상벌점 값 (양수: 상점, 음수: 벌점)
   value: z.number(),
   // 상벌점 부여 이유
@@ -24,6 +27,10 @@ export const Point = z.object({
   rejected_at: z.date().nullable(),
   // 상벌점 거절 이유
   rejected_reason: z.string(),
+  // 상벌점 승인 반려
+  disapproved_at: z.date().nullable(),
+  // 상벌점 승인 반려 이유
+  disapproved_reason: z.string(),
 });
 
 export type Point = z.infer<typeof Point>;

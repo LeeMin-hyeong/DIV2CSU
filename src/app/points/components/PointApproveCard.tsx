@@ -1,6 +1,6 @@
 'use client';
 
-import { fetchPoint, verifyPoint } from '@/app/actions';
+import { fetchPoint, approvePoint } from '@/app/actions';
 import {
   ArrowRightOutlined,
   CheckOutlined,
@@ -24,11 +24,11 @@ import {
   useState,
 } from 'react';
 
-export type PointRequestCardProps = {
+export type PointApproveCardProps = {
   pointId: number;
 };
 
-export function PointRequestCard({ pointId }: PointRequestCardProps) {
+export function PointApproveCard({ pointId }: PointApproveCardProps) {
   const router = useRouter();
   const [point, setPoint] = useState<
     Awaited<ReturnType<typeof fetchPoint>> | undefined
@@ -46,7 +46,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
       }
       if (value) {
         setLoading(true);
-        return verifyPoint(pointId, value)
+        return approvePoint(pointId, value)
           .then(({ message: newMessage }) => {
             if (newMessage) {
               return message.error(newMessage);
@@ -56,7 +56,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
           })
           .finally(() => {
             setLoading(false);
-            router.refresh();
+            router.refresh()
           });
       } else {
         setModalShown(true);
@@ -70,7 +70,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
       return setRejectError('반려 사유를 입력해주세요');
     }
     setLoading(true);
-    verifyPoint(pointId, false, rejectReason)
+    approvePoint(pointId, false, rejectReason)
       .then(({ message: newMessage }) => {
         if (newMessage) {
           return message.error(newMessage);
@@ -82,7 +82,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
       })
       .finally(() => {
         setLoading(false);
-        router.refresh();
+        router.refresh()
       });
   }, [pointId, rejectReason]);
 

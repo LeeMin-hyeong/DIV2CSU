@@ -1,6 +1,6 @@
 'use client';
 
-import { fetchPoint, verifyPoint } from '@/app/actions';
+import { fetchOvertime, approveOvertime } from '@/app/actions';
 import {
   ArrowRightOutlined,
   CheckOutlined,
@@ -24,14 +24,14 @@ import {
   useState,
 } from 'react';
 
-export type PointRequestCardProps = {
-  pointId: number;
+export type OvertimeApproveCardProps = {
+  overtimeId: number;
 };
 
-export function PointRequestCard({ pointId }: PointRequestCardProps) {
+export function OvertimeApproveCard({ overtimeId }: OvertimeApproveCardProps) {
   const router = useRouter();
-  const [point, setPoint] = useState<
-    Awaited<ReturnType<typeof fetchPoint>> | undefined
+  const [overtime, setOvertime] = useState<
+    Awaited<ReturnType<typeof fetchOvertime>> | undefined
   >(undefined);
   const [loading, setLoading] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -46,7 +46,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
       }
       if (value) {
         setLoading(true);
-        return verifyPoint(pointId, value)
+        return approveOvertime(overtimeId, value)
           .then(({ message: newMessage }) => {
             if (newMessage) {
               return message.error(newMessage);
@@ -62,7 +62,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
         setModalShown(true);
       }
     },
-    [pointId, success],
+    [overtimeId, success],
   );
 
   const handleReject = useCallback(() => {
@@ -70,7 +70,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
       return setRejectError('반려 사유를 입력해주세요');
     }
     setLoading(true);
-    verifyPoint(pointId, false, rejectReason)
+    approveOvertime(overtimeId, false, rejectReason)
       .then(({ message: newMessage }) => {
         if (newMessage) {
           return message.error(newMessage);
@@ -84,13 +84,13 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
         setLoading(false);
         router.refresh();
       });
-  }, [pointId, rejectReason]);
+  }, [overtimeId, rejectReason]);
 
   useLayoutEffect(() => {
-    fetchPoint(pointId).then((data) => {
-      setPoint(data);
+    fetchOvertime(overtimeId).then((data) => {
+      setOvertime(data);
     });
-  }, [pointId]);
+  }, [overtimeId]);
 
   return (
     <>
@@ -100,14 +100,16 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
         style={{ backgroundColor: success == null ? '#A7C0FF' : '#D9D9D9' }}
         size='small'
         title={
-          point != null ? (
+          overtime != null ? (
             <div className='flex flex-row justify-between items-center'>
               <div className='flex flex-row align-middle'>
-                <p>{point.giver}</p>
+                <p>{overtime.giver}</p>
                 <ArrowRightOutlined className='mx-2' />
-                <p>{point.receiver}</p>
+                <p>{overtime.receiver}</p>
+                <p className='mx-2' />
+                <p>(확인관 : {overtime.approver})</p>
               </div>
-              <p>{`${point?.value ?? 0}점`}</p>
+              <p>{`${Math.floor(overtime?.value/60)}시간 ${overtime?.value%60}분`}</p>
             </div>
           ) : null
         }
@@ -115,14 +117,17 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
         <Skeleton
           active
           paragraph={{ rows: 0 }}
-          loading={point == null}
+          loading={overtime == null}
         >
           <div className='flex flex-row'>
             <div className='flex-1'>
-              {point?.given_at
-                ? moment(point.given_at).local().format('YYYY년 MM월 DD일')
-                : null}
-              <p>{point?.reason}</p>
+              <p>
+                {overtime?.given_at
+                  ? moment(overtime.given_at).local().format('YYYY년 MM월 DD일 ')
+                  : null}
+                {moment(overtime?.started_at).local().format('HH:mm')} ~ {moment(overtime?.ended_at).local().format('HH:mm')}
+              </p>
+              <p>{overtime?.reason}</p>
             </div>
             <Popconfirm
               className='mx-2'

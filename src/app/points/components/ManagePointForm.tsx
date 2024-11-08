@@ -3,7 +3,8 @@
 import {
   createPoint,
   searchPointsGiver,
-  searchPointsReceiver,
+  searchEnlisted,
+  searchCommander,
 } from '@/app/actions';
 import {
   App,
@@ -29,11 +30,16 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const query = Form.useWatch(type === 'request' ? 'giverId' : 'receiverId', {
+  const soldierQuery = Form.useWatch(type === 'request' ? 'giverId' : 'receiverId', {
     form,
     preserve: true,
   });
-  const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
+  const commanderQuery = Form.useWatch('commanderId', {
+    form,
+    preserve: true,
+  });
+  const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [commanderOptions, setCommanderOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
@@ -57,17 +63,26 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   useEffect(() => {
     setSearching(true);
     if (type === 'request') {
-      searchPointsGiver(query || '').then((value) => {
+      searchPointsGiver(soldierQuery || '').then((value) => {
         setSearching(false);
-        setOptions(value as any);
+        setSoldierOptions(value as any);
       });
     } else {
-      searchPointsReceiver(query || '').then((value) => {
+      searchEnlisted(soldierQuery || '').then((value) => {
         setSearching(false);
-        setOptions(value as any);
+        setSoldierOptions(value as any);
       });
     }
-  }, [query, type]);
+  }, [soldierQuery, type]);
+
+  useEffect(() => {
+    setSearching(true);
+    searchCommander(commanderQuery || '').then((value) => {
+      setSearching(false);
+      setCommanderOptions(value as any);
+    });
+
+  }, [commanderQuery]);
 
   const handleSubmit = useCallback(
     async (newForm: any) => {
@@ -82,12 +97,14 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           if (newMessage) {
             message.error(newMessage);
           }
-          message.success(
-            type === 'request'
-              ? '상벌점 요청을 성공적으로 했습니다'
-              : '상벌점을 성공적으로 부여했습니다',
-          );
-          router.push('/points');
+          else {
+            message.success(
+              type === 'request'
+                ? '상벌점 요청을 성공적으로 했습니다'
+                : '상벌점을 성공적으로 부여했습니다',
+            );
+            router.push('/points');
+          }
         })
         .finally(() => {
           setLoading(false);
@@ -131,12 +148,29 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           label={type === 'request' ? '수여자' : '수령자'}
           name={type === 'request' ? 'giverId' : 'receiverId'}
           rules={[
-            { required: true, message: '수령자를 입력해주세요' },
+            { required: true, message: (type === 'request' ? '수여자' : '수령자')+'를 입력해주세요' },
             { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
           ]}
         >
           <AutoComplete
-            options={options.map((t) => ({
+            options={soldierOptions.map((t) => ({
+              value: t.sn,
+              label: renderPlaceholder(t),
+            }))}
+          >
+            <Input.Search loading={searching} />
+          </AutoComplete>
+        </Form.Item>
+        <Form.Item<string>
+          label='승인자'
+          name='commanderId'
+          rules={[
+            { required: true, message: '승인자를 입력해주세요' },
+            { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
+          ]}
+        >
+          <AutoComplete
+            options={commanderOptions.map((t) => ({
               value: t.sn,
               label: renderPlaceholder(t),
             }))}

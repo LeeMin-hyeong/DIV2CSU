@@ -20,6 +20,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { MenuClickEventHandler } from 'rc-menu/lib/interface';
 import { useCallback, useMemo, useState } from 'react';
 import { currentSoldier, signOut } from './actions';
+import { hasPermission } from './actions/utils';
 
 const title = {
   '/points': '상점 관리',
@@ -74,6 +75,15 @@ export function MenuLayout({
               onClick,
             },
             { key: '/', label: '홈', icon: <HomeOutlined />, onClick },
+
+            hasPermission(data.permissions, [
+              'Admin',
+              'UserAdmin',
+              'DeleteUser',
+              'VerifyUser',
+              'ResetPasswordUser',
+              'GivePermissionUser'
+            ]) ?
             {
               key: '/soldiers/#',
               label: '유저',
@@ -83,29 +93,23 @@ export function MenuLayout({
                   key: '/soldiers/list',
                   label: '유저 관리',
                   icon: <UserOutlined />,
-                  disabled:
-                    _.intersection(data.permissions, [
-                      'Admin',
-                      'UserAdmin',
-                      'ListUser',
-                    ]).length === 0,
                   onClick,
                 },
+
+                hasPermission(data.permissions, [
+                  'Admin',
+                  'UserAdmin',
+                  'VerifyUser',
+                ])?
                 {
                   key: '/soldiers/signup',
                   label: '회원가입 관리',
                   icon: <UserAddOutlined />,
-                  disabled:
-                    _.intersection(data.permissions, [
-                      'Admin',
-                      'UserAdmin',
-                      'ListUser',
-                      'VerifyUser',
-                    ]).length === 0,
+
                   onClick,
-                },
+                } : null,
               ],
-            },
+            } : null,
             {
               key: '/points/#',
               label: '상점',
@@ -117,40 +121,75 @@ export function MenuLayout({
                   icon: <ContainerOutlined />,
                   onClick,
                 },
+
+                data.type === 'enlisted' ?
                 {
                   key: '/points/request',
                   label: '상점 요청',
                   icon: <MailOutlined />,
-                  disabled: data.type !== 'enlisted',
                   onClick,
-                },
+                } : null,
+
+                hasPermission(data.permissions, [
+                  'Admin',
+                  'Commander',
+                  'PointAdmin',
+                  'GiveMeritPoint',
+                  'GiveLargeMeritPoint',
+                  'GiveDemeritPoint',
+                  'GiveLargeDemeritPoint',
+                ]) ?
                 {
                   key: '/points/give',
                   label: '상점 부여',
                   icon: <SendOutlined />,
                   onClick,
-                  disabled:
-                    _.intersection(data.permissions, [
-                      'Admin',
-                      'PointAdmin',
-                      'GiveMeritPoint',
-                      'GiveLargeMeritPoint',
-                      'GiveDemeritPoint',
-                      'GiveLargeDemeritPoint',
-                    ]).length === 0,
-                },
+                } : null,
+
+                hasPermission(data.permissions, [
+                  'Admin',
+                  'Commander',
+                  'PointAdmin',
+                  'UsePoint',
+                ]) ?
                 {
                   key: '/points/redeem',
                   label: '상점 사용',
                   icon: <DeleteOutlined />,
                   onClick,
-                  disabled:
-                    _.intersection(data.permissions, [
-                      'Admin',
-                      'PointAdmin',
-                      'UsePoint',
-                    ]).length === 0,
+                } : null,
+              ],
+            },
+            {
+              key: '/overtimes/#',
+              label: '초과근무',
+              icon: <LikeOutlined />,
+              children: [
+                {
+                  key: '/overtimes',
+                  label: '초과근무 관리',
+                  icon: <ContainerOutlined />,
+                  onClick,
                 },
+
+                data.type === 'enlisted' ?
+                {
+                  key: '/overtimes/request',
+                  label: '초과근무 요청',
+                  icon: <MailOutlined />,
+                  onClick,
+                } : null,
+
+                hasPermission(data.permissions, [
+                  'Admin',
+                  'Commander',
+                ]) ?
+                {
+                  key: '/overtimes/redeem',
+                  label: '초과근무 사용',
+                  icon: <DeleteOutlined />,
+                  onClick,
+                } : null,
               ],
             },
             {
