@@ -82,6 +82,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
       })
       .finally(() => {
         setLoading(false);
+        router.refresh();
       });
   }, [pointId, rejectReason]);
 
