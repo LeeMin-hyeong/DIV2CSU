@@ -92,7 +92,7 @@ export default function MyProfilePage({
   }, [isViewingMine, mySoldier?.permissions]);
 
   const handleResetPassword = useCallback(() => {
-    if (!isViewingMine) {
+    if (isViewingMine) {
       return;
     }
     resetPasswordForce(sn).then(({ password, message: newMessage }) => {
@@ -174,7 +174,7 @@ export default function MyProfilePage({
             </Button>
           )}
       </div>
-      {isViewingMine && <PasswordForm sn={sn} />}
+      {isViewingMine && <PasswordForm sn={sn} force={false}/>}
       <div className='my-1' />
       {data?.type !== 'enlisted' && (
         <>

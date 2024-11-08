@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { PointTemplatesInput } from '../components';
 import { checkIfNco } from '../give/actions';
+import LocaleProvider from 'antd/lib/locale';
 
 export type ManagePointFormProps = {
   type: 'request' | 'give';
@@ -76,7 +77,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
       createPoint({
         ...newForm,
         value: merit * newForm.value,
-        givenAt: (newForm.givenAt.$d as Date).toISOString(),
+        givenAt: (newForm.givenAt.$d as Date),
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
