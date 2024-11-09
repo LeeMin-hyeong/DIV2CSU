@@ -20,7 +20,6 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { PointTemplatesInput } from '../components';
 import { checkIfNco } from '../give/actions';
-import LocaleProvider from 'antd/lib/locale';
 
 export type ManagePointFormProps = {
   type: 'request' | 'give';
@@ -34,6 +33,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     form,
     preserve: true,
   });
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -56,19 +56,25 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   }, [type]);
 
   useEffect(() => {
-    setSearching(true);
-    if (type === 'request') {
-      searchPointsGiver(query || '').then((value) => {
-        setSearching(false);
-        setOptions(value as any);
-      });
-    } else {
-      searchPointsReceiver(query || '').then((value) => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [query]);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      setSearching(true);
+      const searchFunction = type === 'request' ? searchPointsGiver : searchPointsReceiver;
+      searchFunction(debouncedQuery).then((value) => {
         setSearching(false);
         setOptions(value as any);
       });
     }
-  }, [query, type]);
+  }, [debouncedQuery, type]);
 
   const handleSubmit = useCallback(
     async (newForm: any) => {

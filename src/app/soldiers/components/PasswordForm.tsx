@@ -18,23 +18,28 @@ export function PasswordForm({ sn, force }: PasswordFormProps) {
       sn,
       oldPassword: force ? sn : formRef.current?.getFieldValue('password') as string,
       newPassword: formRef.current?.getFieldValue('newPassword') as string,
-      confirmation: formRef.current?.getFieldValue(
-        'newPasswordConfirmation',
-      ) as string,
+      confirmation: formRef.current?.getFieldValue('newPasswordConfirmation') as string,
     })
-      .then(() => {
-        notification.success({
-          message: '변경 성공',
-          description: '비밀번호을 변경하였습니다',
+    .then((e) => {
+      if (e.message) {
+        notification.error({
+          message: '비밀번호 변경 실패',
+          description: e.message,
         });
         formRef.current?.resetFields();
-      })
-      .finally(() => {
-        setMutating(false);
+      } else {
+        notification.success({
+          message: '비밀번호 변경 성공',
+          description: '비밀번호를 변경하였습니다',
+        });
         if(force){
           router.push('/');
         }
-      });
+      }
+    })
+    .finally(() => {
+      setMutating(false);
+    });
   }, [notification, sn]);
 
   return (

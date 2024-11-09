@@ -198,7 +198,7 @@ export async function resetPassword({
   confirmation: string;
 }) {
   const { sn: requestingSoldierSN } = await currentSoldier();
-  if (sn !== requestingSoldierSN) {
+  if (sn !== requestingSoldierSN as string) {
     return { message: '본인만 비밀번호를 변경할 수 있습니다' };
   }
   if (newPassword !== confirmation) {
@@ -215,31 +215,24 @@ export async function resetPassword({
 
   const oldSalt = data.password.slice(0, 32);
   const oldHashedPassword = data.password.slice(32);
-  const oldHashed = pbkdf2Sync(
-    oldPassword,
-    oldSalt,
-    104906,
-    64,
-    'sha256',
-  ).toString('base64');
+  const oldHashed = pbkdf2Sync(oldPassword, oldSalt, 104906, 64, 'sha256').toString('base64');
   if (oldHashedPassword !== oldHashed) {
     return { message: '잘못된 비밀번호 입니다' };
   }
 
   const salt = randomBytes(24).toString('base64');
-  const hashed = pbkdf2Sync(
-    newPassword as string,
-    salt,
-    104906,
-    64,
-    'sha256',
-  ).toString('base64');
+  const hashed = pbkdf2Sync(newPassword as string, salt, 104906, 64, 'sha256').toString('base64');
 
-  await kysely
-    .updateTable('soldiers')
-    .where('sn', '=', sn)
-    .set({ password: salt + hashed })
-    .executeTakeFirstOrThrow();
+  try {
+    await kysely
+      .updateTable('soldiers')
+      .where('sn', '=', sn)
+      .set({ password: salt + hashed })
+      .executeTakeFirstOrThrow();
+    return { message: null };
+  } catch (e) {
+    return { message: '비밀번호 초기화에 실패했습니다' };
+  }
 }
 
 export async function resetPasswordForce(sn: string) {

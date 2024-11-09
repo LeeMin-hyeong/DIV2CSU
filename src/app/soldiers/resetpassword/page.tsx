@@ -1,36 +1,14 @@
 'use client';
 
-import { Permission, Soldier } from '@/interfaces';
-import { LoadingOutlined, QuestionOutlined } from '@ant-design/icons';
-import {
-  Alert,
-  Button,
-  Card,
-  FloatButton,
-  Input,
-  Popconfirm,
-  Select,
-  Spin,
-  message,
-} from 'antd';
-import _ from 'lodash';
-import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import {
-  currentSoldier,
-  fetchSoldier,
-} from '../../actions';
-import {
-  HelpModal,
-  PasswordForm,
-} from '../components';
+import { QuestionOutlined } from '@ant-design/icons';
+import { Card, FloatButton } from 'antd';
+import { useState } from 'react';
+import { HelpModal, PasswordForm } from '../components';
+import { currentSoldier } from '@/app/actions';
 
-export default function ResetPasswordPage({
-  searchParams: { sn },
-}: {
-  searchParams: { sn: string };
-}) {
+export default async function ResetPasswordPage() {
   const [helpShown, setHelpShwon] = useState(false);
-
+  const { sn: sn } = await currentSoldier();
   return (
     <div className='flex flex-1 flex-col py-2 px-3'>
       <Card>
