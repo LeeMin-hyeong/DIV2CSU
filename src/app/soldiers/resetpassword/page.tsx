@@ -19,7 +19,7 @@ export default async function ResetPasswordPage() {
           비밀번호를 변경하시기 바랍니다
         </div>
       </Card>
-      <PasswordForm sn={sn} force={true} />
+      <PasswordForm sn={sn!} force={true} />
 
       <FloatButton
         icon={<QuestionOutlined />}
