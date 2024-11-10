@@ -16,6 +16,7 @@ import {
   message,
 } from 'antd';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 import {
   ChangeEventHandler,
   useCallback,
@@ -28,6 +29,7 @@ export type PointApproveCardProps = {
 };
 
 export function PointApproveCard({ pointId }: PointApproveCardProps) {
+  const router = useRouter();
   const [point, setPoint] = useState<
     Awaited<ReturnType<typeof fetchPoint>> | undefined
   >(undefined);
@@ -54,6 +56,7 @@ export function PointApproveCard({ pointId }: PointApproveCardProps) {
           })
           .finally(() => {
             setLoading(false);
+            router.refresh();
           });
       } else {
         setModalShown(true);
@@ -79,6 +82,7 @@ export function PointApproveCard({ pointId }: PointApproveCardProps) {
       })
       .finally(() => {
         setLoading(false);
+        router.refresh();
       });
   }, [pointId, rejectReason]);
 

@@ -4,7 +4,6 @@ import { sql } from 'kysely';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
 import { checkIfSoldierHasPermission, hasPermission } from './utils';
-import { log } from 'console';
 
 export async function fetchPoint(pointId: number) {
   return kysely
@@ -66,22 +65,30 @@ export async function fetchPointsCountsNco() {
   const query = kysely
     .selectFrom('points')
     .where('giver_id', '=', sn!)
-  const [{ verified }, { pending }, { rejected }] = await Promise.all([
+  const [{ approved }, { pending },{ needApprove }, { rejected }] = await Promise.all([
     query
-    .where('verified_at', 'is not', null)
-    .select((eb) => eb.fn.count<number>('id').as('verified'))
-    .executeTakeFirstOrThrow(),
+      .where('approved_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('approved'))
+      .executeTakeFirstOrThrow(),
     query
       .where('verified_at', 'is', null)
       .where('rejected_at', 'is', null)
       .select((eb) => eb.fn.count<number>('id').as('pending'))
       .executeTakeFirstOrThrow(),
+    kysely
+      .selectFrom('points')
+      .where('commander_id', '=', sn!)
+      .where('verified_at', 'is not', null)
+      .where('rejected_at', 'is', null)
+      .where('approved_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('needApprove'))
+      .executeTakeFirstOrThrow(),
     query
       .where('rejected_at', 'is not', null)
       .select((eb) => eb.fn.count<number>('id').as('rejected'))
       .executeTakeFirstOrThrow(),
-    ]);
-  return { verified, pending, rejected };
+  ]);
+  return { approved, pending, needApprove, rejected };
 }
 
 export async function fetchPointsCountsEnlisted() {
@@ -89,10 +96,10 @@ export async function fetchPointsCountsEnlisted() {
   const query = kysely
     .selectFrom('points')
     .where('receiver_id', '=', sn!)
-  const [{ verified }, { pending }, { rejected }] = await Promise.all([
+  const [{ approved }, { pending },{ needApprove }, { rejected }] = await Promise.all([
     query
-      .where('verified_at', 'is not', null)
-      .select((eb) => eb.fn.count<number>('id').as('verified'))
+      .where('approved_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('approved'))
       .executeTakeFirstOrThrow(),
     query
       .where('verified_at', 'is', null)
@@ -100,11 +107,17 @@ export async function fetchPointsCountsEnlisted() {
       .select((eb) => eb.fn.count<number>('id').as('pending'))
       .executeTakeFirstOrThrow(),
     query
+      .where('verified_at', 'is not', null)
+      .where('rejected_at', 'is', null)
+      .where('approved_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('needApprove'))
+      .executeTakeFirstOrThrow(),
+    query
       .where('rejected_at', 'is not', null)
       .select((eb) => eb.fn.count<number>('id').as('rejected'))
       .executeTakeFirstOrThrow(),
-    ]);
-  return { verified, pending, rejected };
+  ]);
+  return { approved, pending, needApprove, rejected };
 }
 
 export async function fetchApprovePoints() {
@@ -130,7 +143,7 @@ export async function deletePoint(pointId: number) {
   if (data.receiver_id !== sn) {
     return { message: '본인 상벌점만 삭제 할 수 있습니다' };
   }
-  if (data.verified_at) {
+  if (data.approved_at) {
     return { message: '이미 승인된 상벌점은 지울 수 없습니다' };
   }
   try {
@@ -251,6 +264,7 @@ export async function fetchPointSummary(sn: string) {
     pointsQuery
       .where('value', '<', 0)
       .where('verified_at', 'is not', null) // 승인된 상벌점만 가져오도록 수정
+      .where('approved_at', 'is not', null)
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
     usedPointsQuery
@@ -396,6 +410,7 @@ export async function redeemPoint({
         .selectFrom('points')
         .where('receiver_id', '=', userId)
         .where('verified_at', 'is not', null)
+        .where('approved_at', 'is not', null)
         .select(({ fn }) =>
           fn
             .coalesce(fn.sum<string>('points.value'), sql<string>`0`)
