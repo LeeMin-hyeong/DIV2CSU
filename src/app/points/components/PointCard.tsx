@@ -96,9 +96,7 @@ export function PointCard({ pointId }: PointCardProps) {
             </p>
             <p>{point?.reason}</p>
           </div>
-          {point?.rejected_at ||
-          point?.verified_at ||
-          point?.rejected_reason ? null : (
+          {point?.verified_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'

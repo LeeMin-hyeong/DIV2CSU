@@ -132,7 +132,6 @@ export function MenuLayout({
 
                 hasPermission(data.permissions, [
                   'Admin',
-                  'Commander',
                   'PointAdmin',
                   'GiveMeritPoint',
                   'GiveLargeMeritPoint',
@@ -148,7 +147,6 @@ export function MenuLayout({
 
                 hasPermission(data.permissions, [
                   'Admin',
-                  'Commander',
                   'PointAdmin',
                   'UsePoint',
                 ]) ?

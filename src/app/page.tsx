@@ -39,33 +39,27 @@ export default async function Home() {
   } else {
     const {verified, pending, rejected} = await fetchPointsCountsEnlisted();
     return (
-      <div>
+      <Link href={`/points`}>
         <TotalPointBox user={user as any}/>
-        <Link href={`/points`}>
-          <Card className='my-1 mx-1'>
-            <div className='flex flex-row items-center justify-between'>
-              <p className='font-bold'> 승인된 상벌점 요청 </p>
-              <p className='font-bold'> { verified } 건 </p>
-            </div>
-          </Card>
-        </Link>
-        <Link href={`/points`}>
-          <Card className='my-1 mx-1'>
-            <div className='flex flex-row items-center justify-between'>
-              <p className='font-bold'> 승인 대기중인 상벌점 요청 </p>
-              <p className='font-bold'> { pending } 건 </p>
-            </div>
-          </Card>
-        </Link>
-        <Link href={`/points`}>
-          <Card className='my-1 mx-1'>
-            <div className='flex flex-row items-center justify-between'>
-              <p className='font-bold'> 반려된 상벌점 요청 </p>
-              <p className='font-bold'> { rejected } 건 </p>
-            </div>
-          </Card>
-        </Link>
-      </div>
+        <Card className='my-1 mx-1'>
+          <div className='flex flex-row items-center justify-between'>
+            <p className='font-bold'> 승인된 상벌점 요청 </p>
+            <p className='font-bold'> { verified } 건 </p>
+          </div>
+        </Card>
+        <Card className='my-1 mx-1'>
+          <div className='flex flex-row items-center justify-between'>
+            <p className='font-bold'> 승인 대기중인 상벌점 요청 </p>
+            <p className='font-bold'> { pending } 건 </p>
+          </div>
+        </Card>
+        <Card className='my-1 mx-1'>
+          <div className='flex flex-row items-center justify-between'>
+            <p className='font-bold'> 반려된 상벌점 요청 </p>
+            <p className='font-bold'> { rejected } 건 </p>
+          </div>
+        </Card>
+      </Link>
     );
   }
 }
