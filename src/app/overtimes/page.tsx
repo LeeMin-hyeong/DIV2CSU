@@ -1,37 +1,37 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { Divider, FloatButton } from 'antd';
-import { currentSoldier, fetchSoldier, listPoints } from '../actions';
+import { currentSoldier, fetchSoldier, listOvertimes} from '../actions';
 import { hasPermission } from '../actions/utils';
 import {
-  PointListPagination,
-  PointRequestList,
-  PointApproveList,
-  PointsHistoryList,
-  TotalPointBox,
+  OvertimeListPagination,
+  OvertimeRequestList,
+  OvertimeHistoryList,
+  TotalOvertimeBox,
   UsedPointsHorizontalList,
+  OvertimeApproveList,
 } from './components';
 
 async function EnlistedPage({ user, page }: { user: Soldier; page: number }) {
-  const { data, count, usedPoints } = await listPoints(user?.sn, page);
+  const { data, count, usedOvertimes } = await listOvertimes(user?.sn, page);
   return (
     <div className='flex flex-1 flex-col'>
-      <TotalPointBox user={user} />
+      <TotalOvertimeBox user={user} />
       <div className='flex-1 mb-2'>
-        <UsedPointsHorizontalList data={usedPoints} />
-        <PointsHistoryList
+        <UsedPointsHorizontalList data={usedOvertimes as any} />
+        <OvertimeHistoryList
           type={user.type}
           data={data}
         />
       </div>
-      <PointListPagination
+      <OvertimeListPagination
         sn={user.sn}
         total={count}
         page={page}
       />
       <FloatButton
         icon={<PlusOutlined />}
-        href='/points/request'
+        href='/overtimes/request'
       />
     </div>
   );
@@ -46,32 +46,32 @@ async function NcoPage({
   page: number;
   showRequest: boolean;
 }) {
-  const { data, count } = await listPoints(user?.sn, page);
+  const { data, count } = await listOvertimes(user?.sn, page);
 
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
-            <PointRequestList />
+            <OvertimeRequestList />
             <Divider />
           </>
         )}
-        <PointsHistoryList
+        <OvertimeHistoryList
           type={user.type}
           data={data}
         />
       </div>
       <Divider />
-      <PointListPagination
+      <OvertimeListPagination
         sn={user.sn}
         total={count}
         page={page}
       />
-      <FloatButton
+      {/* <FloatButton
         icon={<PlusOutlined />}
         href='/points/give'
-      />
+      /> */}
     </div>
   );
 }
@@ -85,38 +85,38 @@ async function CommanderPage({
   page: number;
   showRequest: boolean;
 }) {
-  const { data, count } = await listPoints(user?.sn, page);
+  const { data, count } = await listOvertimes(user?.sn, page);
 
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
-            <PointApproveList />
+            <OvertimeApproveList />
             <Divider />
           </>
         )}
         {showRequest && (
           <>
-            <PointRequestList />
+            <OvertimeRequestList />
             <Divider />
           </>
         )}
-        <PointsHistoryList
+        <OvertimeHistoryList
           type={user.type}
           data={data}
         />
       </div>
       <Divider />
-      <PointListPagination
+      <OvertimeListPagination
         sn={user.sn}
         total={count}
         page={page}
       />
-      <FloatButton
+      {/* <FloatButton
         icon={<PlusOutlined />}
         href='/points/give'
-      />
+      /> */}
     </div>
   )
 }
