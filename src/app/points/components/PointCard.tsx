@@ -4,6 +4,7 @@ import { deletePoint, fetchPoint } from '@/app/actions';
 import { ArrowRightOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Button, Card, Popconfirm, Skeleton, message } from 'antd';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 import { useCallback, useLayoutEffect, useState } from 'react';
 
 export type PointCardProps = {
@@ -11,6 +12,7 @@ export type PointCardProps = {
 };
 
 export function PointCard({ pointId }: PointCardProps) {
+  const router = useRouter();
   const [point, setPoint] = useState<
     Awaited<ReturnType<typeof fetchPoint>> | undefined
   >(undefined);
@@ -20,9 +22,11 @@ export function PointCard({ pointId }: PointCardProps) {
     deletePoint(pointId).then(({ message: newMessage }) => {
       if (newMessage == null) {
         message.success('삭제하였습니다');
-        return setDeleted(true);
+        setDeleted(true);
+        router.refresh();
+      } else {
+        message.error(newMessage);
       }
-      message.error(newMessage);
     });
   }, [pointId]);
 
@@ -92,9 +96,7 @@ export function PointCard({ pointId }: PointCardProps) {
             </p>
             <p>{point?.reason}</p>
           </div>
-          {point?.rejected_at ||
-          point?.verified_at ||
-          point?.rejected_reason ? null : (
+          {point?.verified_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'

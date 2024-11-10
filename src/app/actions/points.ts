@@ -130,8 +130,8 @@ export async function deletePoint(pointId: number) {
   if (data.receiver_id !== sn) {
     return { message: '본인 상벌점만 삭제 할 수 있습니다' };
   }
-  if (data.approved_at || data.rejected_at || data.rejected_reason || data.disapproved_at || data.disapproved_reason) {
-    return { message: '이미 승인, 반려된 상벌점은 지울 수 없습니다' };
+  if (data.verified_at) {
+    return { message: '이미 승인된 상벌점은 지울 수 없습니다' };
   }
   try {
     await kysely
@@ -265,7 +265,6 @@ export async function fetchPointSummary(sn: string) {
   };
 }
 
-
 export async function createPoint({
   value,
   giverId,
@@ -396,6 +395,7 @@ export async function redeemPoint({
       kysely
         .selectFrom('points')
         .where('receiver_id', '=', userId)
+        .where('verified_at', 'is not', null)
         .select(({ fn }) =>
           fn
             .coalesce(fn.sum<string>('points.value'), sql<string>`0`)

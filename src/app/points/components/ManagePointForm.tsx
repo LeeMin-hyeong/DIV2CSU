@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { PointTemplatesInput } from '../components';
 import { checkIfNco } from '../give/actions';
+import LocaleProvider from 'antd/lib/locale';
 
 export type ManagePointFormProps = {
   type: 'request' | 'give';
@@ -91,7 +92,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
       createPoint({
         ...newForm,
         value: merit * newForm.value,
-        givenAt: (newForm.givenAt.$d as Date).toISOString(),
+        givenAt: (newForm.givenAt.$d as Date),
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
@@ -148,7 +149,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           label={type === 'request' ? '수여자' : '수령자'}
           name={type === 'request' ? 'giverId' : 'receiverId'}
           rules={[
-            { required: true, message: (type === 'request' ? '수여자' : '수령자')+'를 입력해주세요' },
+            { required: true, message: `${type === 'request' ? '수여자' : '수령자'}를 입력해주세요` },
             { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
           ]}
         >
