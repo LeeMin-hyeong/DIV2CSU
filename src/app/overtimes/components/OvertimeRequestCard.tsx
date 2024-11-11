@@ -123,10 +123,11 @@ export function OvertimeRequestCard({ overtimeId }: OvertimeRequestCardProps) {
           <div className='flex flex-row'>
             <div className='flex-1'>
               <p>
-                {overtime?.given_at
-                  ? moment(overtime.given_at).local().format('YYYY년 MM월 DD일 ')
-                  : null}
-                {moment(overtime?.started_at).local().format('HH:mm')} ~ {moment(overtime?.ended_at).local().format('HH:mm')}
+                {
+                  moment(overtime?.started_at).local().format('YYYYMMDD') === moment(overtime?.ended_at).local().format('YYYYMMDD') ?
+                    `${moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).local().format('HH:mm')}` :
+                    `${moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).local().format('YYYY년 MM월 DD일 HH:mm')}`
+                }
               </p>
               <p>{overtime?.reason}</p>
             </div>

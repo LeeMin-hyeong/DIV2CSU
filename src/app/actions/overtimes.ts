@@ -62,6 +62,56 @@ export async function fetchPendingOvertimes() {
     .execute();
 }
 
+export async function fetchOvertimesCountsNco() {
+  const { sn } = await currentSoldier();
+  const query = kysely
+    .selectFrom('overtimes')
+    .where('giver_id', '=', sn!)
+  const [{ needApprove }, { pending }, { rejected }] = await Promise.all([
+    kysely
+      .selectFrom('overtimes')
+      .where('approver_id', '=', sn!)
+      .where('verified_at', 'is not', null)
+      .where('approved_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('needApprove'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where('verified_at', 'is', null)
+      .where('rejected_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('pending'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where((eb) => eb.or([eb('rejected_at', 'is not', null), eb('disapproved_at', 'is not', null)]))
+      .select((eb) => eb.fn.count<number>('id').as('rejected'))
+      .executeTakeFirstOrThrow(),
+    ]);
+  return { needApprove, pending, rejected };
+}
+
+export async function fetchOvertimesCountsEnlisted() {
+  const { sn } = await currentSoldier();
+  const query = kysely
+    .selectFrom('overtimes')
+    .where('receiver_id', '=', sn!)
+  const [{ needApprove }, { pending }, { rejected }] = await Promise.all([
+    query
+      .where('verified_at', 'is not', null)
+      .where('approved_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('needApprove'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where('verified_at', 'is', null)
+      .where('rejected_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('pending'))
+      .executeTakeFirstOrThrow(),
+    query
+      .where((eb) => eb.or([eb('rejected_at', 'is not', null), eb('disapproved_at', 'is not', null)]))
+      .select((eb) => eb.fn.count<number>('id').as('rejected'))
+      .executeTakeFirstOrThrow(),
+    ]);
+  return { needApprove, pending, rejected };
+}
+
 export async function fetchApproveOvertimes() {
   const { sn } = await currentSoldier();
   return kysely
@@ -213,7 +263,6 @@ export async function fetchOvertimeSummary(sn: string) {
     usedOvertime: parseInt(usedOvertimeData?.value ?? '0', 10),
   };
 }
-
 
 export async function createOvertime({
   giverId,

@@ -90,11 +90,15 @@ export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
               <p>반려 사유: {overtime?.rejected_reason}</p>
             )}
             <p>
-              {moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ {moment(overtime?.ended_at).local().format('YYYY년 MM월 DD일 HH:mm')}
+              {
+                moment(overtime?.started_at).local().format('YYYYMMDD') === moment(overtime?.ended_at).local().format('YYYYMMDD') ?
+                  `${moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).local().format('HH:mm')}` :
+                  `${moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).local().format('YYYY년 MM월 DD일 HH:mm')}`
+              }
             </p>
             <p>{overtime?.reason}</p>
           </div>
-          {overtime?.verified_at ? null : (
+          {overtime?.approved_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'
