@@ -4,12 +4,12 @@ import z from 'zod';
 
 export function hasPermission(
   permissions: Permission[],
-  requires: Permission[],
+  requires:    Permission[],
 ) {
   return !!_.intersection(requires, permissions).length;
 }
 
-export function sortPermission(permissions: string[]) {
+export function sortPermission(permissions: Permission[]) {
   if (permissions.includes('Admin')) {
     permissions = ['Admin'];
   }
@@ -26,12 +26,12 @@ export function sortPermission(permissions: string[]) {
   return permissions;
 }
 
-export function validatePermission(permissions: string[]) {
+export function validatePermission(permissions: Permission[]) {
   const { success } = z.array(Permission).safeParse(permissions);
   return success;
 }
 
-export function checkIfSoldierHasPermission(value: number, scope: string[]) {
+export function checkIfSoldierHasPermission(value: number, scope: Permission[]) {
   if (scope.includes('Admin') || scope.includes('PointAdmin')) {
     return { message: null };
   }

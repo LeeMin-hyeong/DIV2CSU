@@ -82,21 +82,19 @@ export async function signIn({
     };
   }
   await validateSoldier(data);
-  const salt = data.password.slice(0, 32);
+  const salt           = data.password.slice(0, 32);
   const hashedPassword = data.password.slice(32);
-  const hashed = pbkdf2Sync(password, salt, 104906, 64, 'sha256').toString(
-    'base64',
-  );
+  const hashed         = pbkdf2Sync(password, salt, 104906, 64, 'sha256').toString('base64');
   if (hashedPassword !== hashed) {
     return {
-      message: '잘못된 비밀번호 입니다',
+      message:     '잘못된 비밀번호 입니다',
       accessToken: null,
     };
   }
   const accessToken = jwt.sign(
     {
       name: data.name,
-      sub: sn,
+      sub:  sn,
       type: data.type,
     },
     process.env.JWT_SECRET_KEY!,
@@ -106,11 +104,13 @@ export async function signIn({
     },
   );
   cookies().set('auth.access_token', accessToken, {
-    maxAge: 60 * 60,
+    maxAge:   60 * 60,
+    path:     '/',
     httpOnly: true,
-    path: '/',
   });
   revalidatePath('/', 'layout');
+  // 비밀번호가 초기화되어 자신의 군번과 동일한 경우
+  // 비밀번호 변경 창으로 연결
   if(password == sn){
     redirect('/soldiers/resetpassword')
   }
@@ -118,10 +118,10 @@ export async function signIn({
 }
 
 const SignUpParams = Soldier.pick({
-  sn: true,
+  sn:       true,
   password: true,
-  type: true,
-  name: true,
+  type:     true,
+  name:     true,
 });
 
 export async function signUp(
@@ -143,11 +143,11 @@ export async function signUp(
     await kysely
       .insertInto('soldiers')
       .values({
-        name: form.name,
-        sn: form.sn,
-        type: form.type,
+        name:     form.name,
+        sn:       form.sn,
+        type:     form.type,
         password: salt + hashed,
-      })
+      } as any)
       .executeTakeFirstOrThrow();
   } catch (e) {
     if ((e as { code: string }).code === '23505') {
@@ -162,14 +162,14 @@ export async function signUp(
         ['GiveMeritPoint', 'GiveDemeritPoint'].map((p) => ({
           soldiers_id: form.sn,
           value: p,
-        })),
+        } as any)),
       )
       .executeTakeFirst();
   }
   const accessToken = jwt.sign(
     {
       name: form.name,
-      sub: form.sn,
+      sub:  form.sn,
       type: form.type,
     },
     process.env.JWT_SECRET_KEY!,
@@ -179,8 +179,8 @@ export async function signUp(
     },
   );
   cookies().set('auth.access_token', accessToken, {
-    maxAge: 60 * 60,
-    path: '/',
+    maxAge:   60 * 60,
+    path:     '/',
     httpOnly: true,
   });
   redirect('/auth/needVerification');
@@ -192,13 +192,13 @@ export async function resetPassword({
   newPassword,
   confirmation,
 }: {
-  sn: string;
-  oldPassword: string;
-  newPassword: string;
+  sn:           string;
+  oldPassword:  string;
+  newPassword:  string;
   confirmation: string;
 }) {
   const { sn: requestingSoldierSN } = await currentSoldier();
-  if (sn !== requestingSoldierSN as string) {
+  if (sn !== requestingSoldierSN) {
     return { message: '본인만 비밀번호를 변경할 수 있습니다' };
   }
   if (newPassword !== confirmation) {
@@ -213,9 +213,9 @@ export async function resetPassword({
     .select('password')
     .executeTakeFirstOrThrow();
 
-  const oldSalt = data.password.slice(0, 32);
+  const oldSalt           = data.password.slice(0, 32);
   const oldHashedPassword = data.password.slice(32);
-  const oldHashed = pbkdf2Sync(oldPassword, oldSalt, 104906, 64, 'sha256').toString('base64');
+  const oldHashed         = pbkdf2Sync(oldPassword, oldSalt, 104906, 64, 'sha256').toString('base64');
   if (oldHashedPassword !== oldHashed) {
     return { message: '잘못된 비밀번호 입니다' };
   }

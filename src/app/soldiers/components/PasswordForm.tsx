@@ -20,11 +20,11 @@ export function PasswordForm({ sn, force }: PasswordFormProps) {
       newPassword: formRef.current?.getFieldValue('newPassword') as string,
       confirmation: formRef.current?.getFieldValue('newPasswordConfirmation') as string,
     })
-    .then((e) => {
-      if (e.message) {
+    .then(({ message }) => {
+      if (message) {
         notification.error({
           message: '비밀번호 변경 실패',
-          description: e.message,
+          description: message,
         });
         formRef.current?.resetFields();
       } else {
@@ -32,7 +32,7 @@ export function PasswordForm({ sn, force }: PasswordFormProps) {
           message: '비밀번호 변경 성공',
           description: '비밀번호를 변경하였습니다',
         });
-        if(force){
+        if (force) {
           router.push('/');
         }
       }
@@ -48,7 +48,8 @@ export function PasswordForm({ sn, force }: PasswordFormProps) {
       ref={formRef}
       onFinish={handlePasswordForm}
     >
-      {force ? null : <Form.Item
+      {force ? null : 
+      <Form.Item
         label='현재 비밀번호'
         name='password'
         required

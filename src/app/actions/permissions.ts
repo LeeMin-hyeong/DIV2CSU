@@ -1,5 +1,6 @@
 'use server';
 
+import { Permission } from '@/interfaces';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
 import { hasPermission, sortPermission, validatePermission } from './utils';
@@ -8,8 +9,8 @@ export async function updatePermissions({
   sn,
   permissions,
 }: {
-  sn: string;
-  permissions: string[];
+  sn:          string;
+  permissions: Permission[];
 }) {
   const current = await currentSoldier();
   if (sn === current.sn) {
@@ -45,7 +46,7 @@ export async function updatePermissions({
     await kysely
       .insertInto('permissions')
       .values(
-        sortPermission(permissions).map((p) => ({ soldiers_id: sn, value: p })),
+        sortPermission(permissions).map((p) => ({ soldiers_id: sn, value: p } as any)),
       )
       .executeTakeFirstOrThrow();
     return { message: null };

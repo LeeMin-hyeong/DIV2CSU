@@ -20,7 +20,6 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { PointTemplatesInput } from '../components';
 import { checkIfNco } from '../give/actions';
-import LocaleProvider from 'antd/lib/locale';
 
 export type ManagePointFormProps = {
   type: 'request' | 'give';

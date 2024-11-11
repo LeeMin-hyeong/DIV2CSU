@@ -1,6 +1,6 @@
 'use server';
 
-import { Permission } from '@/interfaces';
+import { Permission} from '@/interfaces';
 import jwt from 'jsonwebtoken';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { cookies } from 'next/headers';
@@ -21,7 +21,7 @@ export async function unauthenticated_currentSoldier() {
     }) as {
       name: string;
       type: string;
-      sub: string;
+      sub:  string;
     };
   } catch (e) {
     cookies().delete('auth.access_token');
@@ -57,10 +57,13 @@ export const fetchSoldier = cache(async (sn: string) => {
     ])
     .executeTakeFirst();
   return {
-    ...data,
-    permissions: (data?.permissions ?? []).map(
-      ({ value }) => value as Permission,
-    ),
+    sn:          data?.sn as string,
+    name:        data?.name as string,
+    type:        data?.type as ('nco' | 'enlisted'),
+    verified_at: data?.verified_at as Date,
+    deleted_at:  data?.deleted_at as Date,
+    rejected_at: data?.rejected_at as Date,
+    permissions: (data?.permissions ?? []).map(({ value }: { value: Permission }) => value),
   };
 });
 
@@ -114,7 +117,7 @@ export async function listSoldiers({
   page,
 }: {
   query?: string | null;
-  page?: number | null;
+  page?:  number | null;
 }) {
   await currentSoldier();
   const [{ count }, data] = await Promise.all([
@@ -201,7 +204,7 @@ export async function deleteSoldier({
   sn,
   value,
 }: {
-  sn: string;
+  sn:    string;
   value: boolean;
 }) {
   const { sn: requestSn, permissions } = await currentSoldier();
