@@ -44,7 +44,7 @@ export default function MyProfilePage({
   const isViewingMine =
     targetSoldier == null || mySoldier?.sn === targetSoldier.sn;
   const [helpShown, setHelpShwon] = useState(false);
-  const [permissions, setPermissions] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
   const [newPassword, setNewPassword] = useState<string | null>(null);
 
   useLayoutEffect(() => {
