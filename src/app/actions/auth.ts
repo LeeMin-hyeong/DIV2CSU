@@ -67,7 +67,7 @@ export async function signIn({
             .select(['value', 'verified_at'])
             .whereRef('permissions.soldiers_id', '=', 'soldiers.sn'),
         ).as('permissions'),
-      ] as any)
+      ])
       .executeTakeFirstOrThrow();
   } catch (e) {
     if (e instanceof NoResultError) {

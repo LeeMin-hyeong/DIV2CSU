@@ -4,7 +4,6 @@ import { sql } from 'kysely';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
 import { checkIfSoldierHasPermission, hasPermission } from './utils';
-import { log } from 'console';
 
 export async function fetchPoint(pointId: number) {
   return kysely
@@ -12,9 +11,8 @@ export async function fetchPoint(pointId: number) {
     .where('id', '=', pointId)
     .leftJoin('soldiers as g', 'g.sn', 'points.giver_id')
     .leftJoin('soldiers as r', 'r.sn', 'points.receiver_id')
-    .leftJoin('soldiers as c', 'c.sn', 'points.commander_id')
     .selectAll(['points'])
-    .select(['r.name as receiver', 'g.name as giver', 'c.name as commander'])
+    .select(['r.name as receiver', 'g.name as giver'])
     .executeTakeFirst();
 }
 
@@ -107,18 +105,6 @@ export async function fetchPointsCountsEnlisted() {
   return { verified, pending, rejected };
 }
 
-export async function fetchApprovePoints() {
-  const { sn } = await currentSoldier();
-  return kysely
-    .selectFrom('points')
-    .where('commander_id', '=', sn!)
-    .where('verified_at', 'is not', null)
-    .where('approved_at', 'is', null)
-    .selectAll()
-    .execute();
-
-}
-
 export async function deletePoint(pointId: number) {
   const { type, sn } = await currentSoldier();
   if (type === 'nco') {
@@ -191,52 +177,6 @@ export async function verifyPoint(
   }
 }
 
-export async function approvePoint(
-  pointId: number,
-  value: boolean,
-  disapprovedReason?: string,
-) {
-  const [point, current] = await Promise.all([
-    fetchPoint(pointId),
-    currentSoldier(),
-  ]);
-  if (point == null) {
-    return { message: '본 상벌점이 존재하지 않습니다' };
-  }
-  if (point.commander_id !== current.sn) {
-    return { message: '본인한테 요청된 상벌점만 승인/반려 할 수 있십니다' };
-  }
-  if (current.type === 'enlisted') {
-    return { message: '용사는 상벌점을 승인/반려 할 수 없습니다' };
-  }
-  if (!value && disapprovedReason == null) {
-    return { message: '반려 사유를 입력해주세요' };
-  }
-  if (value) {
-    const { message } = checkIfSoldierHasPermission(
-      point.value,
-      current.permissions,
-    );
-    if (message) {
-      return { message };
-    }
-  }
-  try {
-    await kysely
-      .updateTable('points')
-      .where('id', '=', pointId)
-      .set({
-        approved_at: value ? new Date() : null,
-        disapproved_at: !value ? new Date() : null,
-        disapproved_reason: disapprovedReason,
-      })
-      .executeTakeFirstOrThrow();
-    return { message: null };
-  } catch (e) {
-    return { message: '승인/반려에 실패하였습니다' };
-  }
-}
-
 export async function fetchPointSummary(sn: string) {
   const pointsQuery = kysely.selectFrom('points').where('receiver_id', '=', sn);
   const usedPointsQuery = kysely
@@ -245,8 +185,7 @@ export async function fetchPointSummary(sn: string) {
   const [meritData, demeritData, usedMeritData] = await Promise.all([
     pointsQuery
       .where('value', '>', 0)
-      .where('verified_at', 'is not', null)
-      .where('approved_at', 'is not', null)
+      .where('verified_at', 'is not', null) // verified_at이 null이 아닌 경우
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
     pointsQuery
@@ -270,14 +209,12 @@ export async function createPoint({
   value,
   giverId,
   receiverId,
-  commanderId,
   reason,
   givenAt,
 }: {
   value: number;
   giverId?: string | null;
   receiverId?: string | null;
-  commanderId: string;
   reason: string;
   givenAt: Date;
 }) {
@@ -300,15 +237,8 @@ export async function createPoint({
   const target = await fetchSoldier(
     type === 'enlisted' ? giverId! : receiverId!,
   );
-  if (target.sn == null) {
+  if (target == null) {
     return { message: '대상이 존재하지 않습니다' };
-  }
-  const commander = await fetchSoldier(commanderId);
-  if (commander.sn == null) {
-    return { message: '최종 승인 지휘관이 존재하지 않습니다'}
-  }
-  if (!hasPermission(commander.permissions, ['Admin', 'Commander'])){
-    return { message: '해당 승인자는 중대장급 이상 지휘관이 아닙니다'}
   }
   if (type === 'enlisted') {
     if (giverId === sn) {
@@ -320,7 +250,6 @@ export async function createPoint({
         .values({
           given_at: givenAt,
           receiver_id: sn!,
-          commander_id: commanderId,
           reason,
           giver_id: giverId!,
           value,
@@ -343,11 +272,9 @@ export async function createPoint({
         receiver_id: receiverId!,
         reason,
         giver_id: sn!,
-        commander_id: commanderId,
         given_at: givenAt,
         value,
         verified_at: new Date(),
-        approved_at: sn === commander.sn ? new Date() : null
       })
       .executeTakeFirstOrThrow();
     return { message: null };

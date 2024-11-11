@@ -86,7 +86,7 @@ export async function deleteOvertime(overtimeId: number) {
     return { message: '본인 초과근무만 삭제 할 수 있습니다' };
   }
   if (overtime.approved_at) {
-    return { message: '이미 승인, 반려된 초과근무는 지울 수 없습니다' };
+    return { message: '이미 승인된 초과근무는 지울 수 없습니다' };
   }
   try {
     await kysely
@@ -216,12 +216,9 @@ export async function fetchOvertimeSummary(sn: string) {
 
 
 export async function createOvertime({
-  value,
   giverId,
-  receiverId,
   approverId,
   reason,
-  givenAt,
   startedDate,
   startedTime,
   endedDate,
@@ -263,7 +260,6 @@ export async function createOvertime({
     new Date(startedTime).getHours()+9,
     new Date(startedTime).getMinutes()
   );
-  
   const endedDateTime = new Date(
     new Date(endedDate).getFullYear(),
     new Date(endedDate).getMonth(),
@@ -271,18 +267,16 @@ export async function createOvertime({
     new Date(endedTime).getHours()+9,
     new Date(endedTime).getMinutes()
   );
-  // const endDateTime = moment(`${endedDate} ${endedTime}`, 'YYYY-MM-DD HH:mm');
-  const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
+  const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000).toString();
   const startedAt = startedDateTime.toISOString();
   const endedAt = endedDateTime.toISOString();
   // try {
     await kysely
       .insertInto('overtimes')
       .values({
-        // created_at:  new Date(),
         receiver_id: sn!,
         giver_id:    giverId!,
-        approver_id: approverId,
+        approver_id: approverId!,
         reason:      reason,
         value:       duration,
         verified_at: null,

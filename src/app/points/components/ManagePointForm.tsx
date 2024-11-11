@@ -31,16 +31,11 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const soldierQuery = Form.useWatch(type === 'request' ? 'giverId' : 'receiverId', {
+  const query = Form.useWatch(type === 'request' ? 'giverId' : 'receiverId', {
     form,
     preserve: true,
   });
-  const commanderQuery = Form.useWatch('commanderId', {
-    form,
-    preserve: true,
-  });
-  const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
-  const [commanderOptions, setCommanderOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
@@ -64,26 +59,17 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   useEffect(() => {
     setSearching(true);
     if (type === 'request') {
-      searchPointsGiver(soldierQuery || '').then((value) => {
+      searchPointsGiver(query || '').then((value) => {
         setSearching(false);
-        setSoldierOptions(value as any);
+        setOptions(value as any);
       });
     } else {
-      searchEnlisted(soldierQuery || '').then((value) => {
+      searchEnlisted(query || '').then((value) => {
         setSearching(false);
-        setSoldierOptions(value as any);
+        setOptions(value as any);
       });
     }
-  }, [soldierQuery, type]);
-
-  useEffect(() => {
-    setSearching(true);
-    searchCommander(commanderQuery || '').then((value) => {
-      setSearching(false);
-      setCommanderOptions(value as any);
-    });
-
-  }, [commanderQuery]);
+  }, [query, type]);
 
   const handleSubmit = useCallback(
     async (newForm: any) => {
@@ -154,7 +140,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           ]}
         >
           <AutoComplete
-            options={commanderOptions.map((t) => ({
+            options={options.map((t) => ({
               value: t.sn,
               label: renderPlaceholder(t),
             }))}

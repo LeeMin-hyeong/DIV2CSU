@@ -279,4 +279,3 @@ export async function deleteSoldier({
     .executeTakeFirstOrThrow();
   return { message: null };
 }
-

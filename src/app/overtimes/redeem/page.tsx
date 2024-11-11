@@ -68,8 +68,9 @@ export default function UsePointFormPage() {
         .then(({ message: newMessage }) => {
           if (newMessage) {
             message.error(newMessage);
+          } else {
+            message.success('초과근무를 성공적으로 사용했습니다');
           }
-          message.success('상점을 성공적으로 사용했습니다');
           router.push('/overtimes');
         })
         .finally(() => {
@@ -102,7 +103,7 @@ export default function UsePointFormPage() {
           label={'사용 대상자'}
           name={'userId'}
           rules={[
-            { required: true, message: '수령자를 입력해주세요' },
+            { required: true, message: '대상자를 입력해주세요' },
             {
               pattern: /^[0-9]{2}-[0-9]{5,8}$/,
               message: '잘못된 군번입니다',
@@ -126,7 +127,7 @@ export default function UsePointFormPage() {
         </Form.Item>
         <Form.Item<number>
           name='value'
-          rules={[{ required: true, message: '상벌점을 입력해주세요' }]}
+          rules={[{ required: true, message: '휴가 일수를 입력해주세요' }]}
         >
           <InputNumber
             min={1}

@@ -83,10 +83,6 @@ export function ManageOvertimeForm() {
       const startDateTime = moment(`${startDate} ${startTime}`, 'YYYY-MM-DD HH:mm');
       const endDateTime = moment(`${endDate} ${endTime}`, 'YYYY-MM-DD HH:mm');
       const duration = Math.floor((endDateTime.valueOf() - startDateTime.valueOf())/60000);
-      
-      // setStartedAt(startDateTime.toISOString());
-      // setEndedAt(endDateTime.toISOString());
-      // setValue(duration);
 
       if (duration > 0) {
         const hours = Math.floor(duration / 60);
@@ -115,10 +111,6 @@ export function ManageOvertimeForm() {
       setLoading(true);
       createOvertime({
         ...newForm,
-        // value: value,
-        // givenAt: newForm.givenAt,
-        // startedAt: startedAt,
-        // endedAt: endedAt,
         startedDate: newForm.startedDate,
         startedTime: newForm.startedTime,
         endedDate: newForm.endedDate,
