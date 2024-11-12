@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useLayoutEffect, useState } from 'react';
 
 export type PointCardProps = {
-  pointId: number;
+  pointId: string;
 };
 
 export function PointCard({ pointId }: PointCardProps) {

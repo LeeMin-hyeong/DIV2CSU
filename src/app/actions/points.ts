@@ -5,7 +5,7 @@ import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
 import { checkIfSoldierHasPermission, hasPermission } from './utils';
 
-export async function fetchPoint(pointId: number) {
+export async function fetchPoint(pointId: string) {
   return kysely
     .selectFrom('points')
     .where('id', '=', pointId)
@@ -105,7 +105,7 @@ export async function fetchPointsCountsEnlisted() {
   return { verified, pending, rejected };
 }
 
-export async function deletePoint(pointId: number) {
+export async function deletePoint(pointId: string) {
   const { type, sn } = await currentSoldier();
   if (type === 'nco') {
     return { message: '간부는 상벌점을 지울 수 없습니다' };
@@ -132,8 +132,8 @@ export async function deletePoint(pointId: number) {
 }
 
 export async function verifyPoint(
-  pointId: number,
-  value: boolean,
+  pointId:       string,
+  value:         boolean,
   rejectReason?: string,
 ) {
   const [point, current] = await Promise.all([
@@ -166,8 +166,8 @@ export async function verifyPoint(
       .updateTable('points')
       .where('id', '=', pointId)
       .set({
-        verified_at: value ? new Date() : null,
-        rejected_at: !value ? new Date() : null,
+        verified_at:     value ? new Date() : null,
+        rejected_at:     !value ? new Date() : null,
         rejected_reason: rejectReason,
       })
       .executeTakeFirstOrThrow();
@@ -212,11 +212,11 @@ export async function createPoint({
   reason,
   givenAt,
 }: {
-  value: number;
-  giverId?: string | null;
+  value:       number;
+  giverId?:    string | null;
   receiverId?: string | null;
-  reason: string;
-  givenAt: Date;
+  reason:      string;
+  givenAt:     Date;
 }) {
   if (reason.trim() === '') {
     return { message: '상벌점 수여 이유를 작성해주세요' };
@@ -248,13 +248,13 @@ export async function createPoint({
       await kysely
         .insertInto('points')
         .values({
-          given_at: givenAt,
+          given_at:    givenAt,
           receiver_id: sn!,
-          reason,
-          giver_id: giverId!,
+          giver_id:    giverId!,
           value,
+          reason,
           verified_at: null,
-        })
+        } as any)
         .executeTakeFirstOrThrow();
       return { message: null };
     } catch (e) {
@@ -269,13 +269,13 @@ export async function createPoint({
     await kysely
       .insertInto('points')
       .values({
+        given_at:    givenAt,
         receiver_id: receiverId!,
-        reason,
-        giver_id: sn!,
-        given_at: givenAt,
+        giver_id:    sn!,
         value,
+        reason,
         verified_at: new Date(),
-      })
+      } as any)
       .executeTakeFirstOrThrow();
     return { message: null };
   } catch (e) {
@@ -288,7 +288,7 @@ export async function redeemPoint({
   userId,
   reason,
 }: {
-  value: number;
+  value:  number;
   userId: string;
   reason: string;
 }) {
@@ -346,11 +346,11 @@ export async function redeemPoint({
     await kysely
       .insertInto('used_points')
       .values({
-        user_id: userId,
+        user_id:     userId,
         recorded_by: sn,
         reason,
         value,
-      })
+      } as any)
       .executeTakeFirstOrThrow();
     return { message: null };
   } catch (e) {
