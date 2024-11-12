@@ -19,7 +19,7 @@ export default function SignUpPage() {
     }
     setLoading(true);
     const data = await signUp(form);
-    if (data.message) {
+    if (data) {
       message.error(data.message);
     }
     setLoading(false);

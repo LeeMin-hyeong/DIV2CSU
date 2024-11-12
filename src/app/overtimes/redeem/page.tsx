@@ -1,7 +1,9 @@
 'use client';
 
 import {
+  fetchOvertimeSummary,
   fetchPointSummary,
+  redeemOvertime,
   redeemPoint,
   searchEnlisted,
 } from '@/app/actions';
@@ -30,7 +32,7 @@ export default function UsePointFormPage() {
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [availablePoints, setAvailablePoints] = useState<number | null>();
+  const [availableOvertimes, setAvailableOvertimes] = useState<number | null>();
   const { message } = App.useApp();
 
   const renderPlaceholder = useCallback(
@@ -59,16 +61,17 @@ export default function UsePointFormPage() {
     async (newForm: any) => {
       await form.validateFields();
       setLoading(true);
-      redeemPoint({
+      redeemOvertime({
         ...newForm,
         value: newForm.value,
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
             message.error(newMessage);
+          } else {
+            message.success('초과근무를 성공적으로 사용했습니다');
           }
-          message.success('상점을 성공적으로 사용했습니다');
-          router.push('/points');
+          router.push('/overtimes');
         })
         .finally(() => {
           setLoading(false);
@@ -100,7 +103,7 @@ export default function UsePointFormPage() {
           label={'사용 대상자'}
           name={'userId'}
           rules={[
-            { required: true, message: '수령자를 입력해주세요' },
+            { required: true, message: '대상자를 입력해주세요' },
             {
               pattern: /^[0-9]{2}-[0-9]{5,8}$/,
               message: '잘못된 군번입니다',
@@ -113,10 +116,10 @@ export default function UsePointFormPage() {
               label: renderPlaceholder(t),
             }))}
             onChange={async (value) => {
-              const { merit, usedMerit, demerit } = await fetchPointSummary(
+              const { overtime, usedOvertime } = await fetchOvertimeSummary(
                 value,
               );
-              setAvailablePoints(merit - usedMerit + demerit);
+              setAvailableOvertimes(Math.floor((overtime - usedOvertime)/1440));
             }}
           >
             <Input.Search loading={searching} />
@@ -124,29 +127,29 @@ export default function UsePointFormPage() {
         </Form.Item>
         <Form.Item<number>
           name='value'
-          rules={[{ required: true, message: '상벌점을 입력해주세요' }]}
+          rules={[{ required: true, message: '휴가 일수를 입력해주세요' }]}
         >
           <InputNumber
             min={1}
             controls
             addonAfter={
-              availablePoints != null ? `/ ${availablePoints}점` : '점'
+              availableOvertimes != null ? `/ ${availableOvertimes}일` : '일'
             }
             type='number'
             inputMode='numeric'
           />
         </Form.Item>
-        <Form.Item<string>
+        {/* <Form.Item<string>
           name='reason'
           rules={[{ required: true, message: '지급이유를 입력해주세요' }]}
         >
           <Input.TextArea
             showCount
             maxLength={500}
-            placeholder='상벌점 사용 이유'
+            placeholder='초과근무 사용 이유'
             style={{ height: 150 }}
           />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item>
           <Button
             ghost={false}
