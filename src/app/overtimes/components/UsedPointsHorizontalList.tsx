@@ -19,7 +19,7 @@ export function UsedPointsHorizontalList({
             title={`${dayjs(p.created_at).format('YYYY년 MM월 DD일')} - ${
               p.value
             }일`}
-            description={`위로휴가 발급`}
+            description={p.reason}
           />
         </Card>
       ))}

@@ -12,18 +12,12 @@ import {
   Divider,
   Form,
   Input,
-  InputNumber,
-  Row,
-  Select,
   TimePicker
 } from 'antd';
 import locale from 'antd/es/date-picker/locale/ko_KR';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { checkIfNco } from '../give/actions';
 import moment from 'moment';
-import { debounce } from 'lodash';
-import { Soldier } from '@/interfaces';
 
 export function ManageOvertimeForm() {
   const [form] = Form.useForm();
@@ -36,8 +30,8 @@ export function ManageOvertimeForm() {
     form,
     preserve: true,
   });
-  const [soldierOptions, setSoldierOptions] = useState([]);
-  const [approverOptions, setApproverOptions] = useState([]);
+  const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [approverOptions, setApproverOptions] =useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
@@ -46,14 +40,9 @@ export function ManageOvertimeForm() {
   const [endDate, setEndDate] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [overtimeDuration, setOvertimeDuration] = useState('');
-  const [value, setValue] = useState(0);
-  const [startedAt, setStartedAt] = useState(null);
-  const [endedAt, setEndedAt] = useState(null);
-
-  const offset = new Date().getTimezoneOffset() * 60000;
 
   const renderPlaceholder = useCallback(
-    ({ name, sn }) => (
+    ({ name, sn }: { name: string; sn: string }) => (
       <div className='flex flex-row justify-between'>
         <span className='text-black'>{name}</span>
         <span className='text-black'>{sn}</span>
@@ -113,8 +102,8 @@ export function ManageOvertimeForm() {
         ...newForm,
         startedDate: newForm.startedDate,
         startedTime: newForm.startedTime,
-        endedDate: newForm.endedDate,
-        endedTime: newForm.endedTime,
+        endedDate:   newForm.endedDate,
+        endedTime:   newForm.endedTime,
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {

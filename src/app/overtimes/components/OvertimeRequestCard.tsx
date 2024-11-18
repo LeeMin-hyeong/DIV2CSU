@@ -16,7 +16,6 @@ import {
   message,
 } from 'antd';
 import moment from 'moment';
-import { redirect } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import {
   ChangeEventHandler,
@@ -26,7 +25,7 @@ import {
 } from 'react';
 
 export type OvertimeRequestCardProps = {
-  overtimeId: number;
+  overtimeId: string;
 };
 
 export function OvertimeRequestCard({ overtimeId }: OvertimeRequestCardProps) {

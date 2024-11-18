@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useLayoutEffect, useState } from 'react';
 
 export type OvertimeCardProps = {
-  overtimeId: number;
+  overtimeId: string;
 };
 
 export function OvertimeCard({ overtimeId }: OvertimeCardProps) {

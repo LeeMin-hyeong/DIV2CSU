@@ -4,10 +4,8 @@ import { sql } from 'kysely';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
 import { checkIfSoldierHasPermission, hasPermission } from './utils';
-import { log } from 'console';
-import moment from 'moment';
 
-export async function fetchOvertime(overtimeId: number) {
+export async function fetchOvertime(overtimeId: string) {
   return kysely
     .selectFrom('overtimes')
     .where('id', '=', overtimeId)
@@ -123,7 +121,7 @@ export async function fetchApproveOvertimes() {
     .execute();
 }
 
-export async function deleteOvertime(overtimeId: number) {
+export async function deleteOvertime(overtimeId: string) {
   const { type, sn } = await currentSoldier();
   if (type === 'nco') {
     return { message: '간부는 초과근무를 지울 수 없습니다' };
@@ -150,8 +148,8 @@ export async function deleteOvertime(overtimeId: number) {
 }
 
 export async function verifyOvertime(
-  overtimeId: number,
-  value: boolean,
+  overtimeId:    string,
+  value:         boolean,
   rejectReason?: string,
 ) {
   const [overtime, current] = await Promise.all([
@@ -196,8 +194,8 @@ export async function verifyOvertime(
 }
 
 export async function approveOvertime(
-  overtimeId: number,
-  value: boolean,
+  overtimeId:         string,
+  value:              boolean,
   disapprovedReason?: string,
 ) {
   const [overtime, current] = await Promise.all([
@@ -241,6 +239,7 @@ export async function approveOvertime(
   }
 }
 
+// 초과근무: 분 단위, 초과근무 사용: 일 단위
 export async function fetchOvertimeSummary(sn: string) {
   const overtimesQuery = kysely.selectFrom('overtimes').where('receiver_id', '=', sn);
   const usedOvertimesQuery = kysely
@@ -254,9 +253,12 @@ export async function fetchOvertimeSummary(sn: string) {
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
     usedOvertimesQuery
-      .where('value', '>', 0)
-      .select((eb) => eb.fn.sum<string>('value').as('value'))
-      .executeTakeFirst(),
+      .select(({ fn }) =>
+        fn
+          .coalesce(fn.sum<string>('used_overtimes.value'), sql<string>`0`)
+          .as('value'),
+      )
+      .executeTakeFirstOrThrow(),
   ]);
   return {
     overtime: parseInt(overtimeData?.value ?? '0', 10),
@@ -273,16 +275,16 @@ export async function createOvertime({
   endedDate,
   endedTime,
 }: {
-  value: number;
-  giverId?: string | null;
+  value:       number;
+  giverId?:    string | null;
   receiverId?: string | null;
   approverId?: string;
-  reason: string;
-  givenAt: Date;
+  reason:      string;
+  givenAt:     Date;
   startedDate: Date;
   startedTime: Date;
-  endedDate: Date;
-  endedTime: Date;
+  endedDate:   Date;
+  endedTime:   Date;
 }) {
   if (reason.trim() === '') {
     return { message: '초과근무 내용을 작성해주세요' };
@@ -316,10 +318,10 @@ export async function createOvertime({
     new Date(endedTime).getHours()+9,
     new Date(endedTime).getMinutes()
   );
-  const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000).toString();
+  const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
   const startedAt = startedDateTime.toISOString();
   const endedAt = endedDateTime.toISOString();
-  // try {
+  try {
     await kysely
       .insertInto('overtimes')
       .values({
@@ -331,26 +333,26 @@ export async function createOvertime({
         verified_at: null,
         started_at:  startedAt,
         ended_at:    endedAt,
-      })
+      } as any)
       .executeTakeFirstOrThrow();
     return { message: null };
-  // } catch (e) {
-  //   return { message: '알 수 없는 오류가 발생했습니다' };
-  // }
+  } catch (e) {
+    return { message: '알 수 없는 오류가 발생했습니다' };
+  }
 }
 
 export async function redeemOvertime({
   value,
   userId,
-  // reason,
+  reason,
 }: {
   value: number;
   userId: string;
-  // reason: string;
+  reason: string;
 }) {
-  // if (reason.trim() === '') {
-  //   return { message: '상벌점 사용 이유를 작성해주세요' };
-  // }
+  if (reason.trim() === '') {
+    return { message: '상벌점 사용 이유를 작성해주세요' };
+  }
   if (value !== Math.round(value)) {
     return { message: '휴가일수는 정수여야 합니다' };
   }
@@ -403,11 +405,11 @@ export async function redeemOvertime({
     await kysely
       .insertInto('used_overtimes')
       .values({
-        user_id: userId,
+        user_id:     userId,
         recorded_by: sn,
-        // reason,
+        reason,
         value,
-      })
+      } as any)
       .executeTakeFirstOrThrow();
     return { message: null };
   } catch (e) {

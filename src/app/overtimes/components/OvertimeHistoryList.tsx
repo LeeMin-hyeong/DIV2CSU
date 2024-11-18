@@ -1,7 +1,7 @@
 import { Empty } from 'antd';
 import { OvertimeCard } from './OvertimeCard';
 
-export type OvertimeHistoryListProps = { type: string; data: { id: number }[] };
+export type OvertimeHistoryListProps = { type: string; data: { id: string }[] };
 
 export async function OvertimeHistoryList({
   data,

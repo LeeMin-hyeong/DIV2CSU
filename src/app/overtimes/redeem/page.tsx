@@ -1,10 +1,9 @@
 'use client';
 
 import {
+  currentSoldier,
   fetchOvertimeSummary,
-  fetchPointSummary,
   redeemOvertime,
-  redeemPoint,
   searchEnlisted,
 } from '@/app/actions';
 import {
@@ -18,9 +17,15 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { checkIfNco } from '../give/actions';
+
+export async function checkIfNco() {
+  const data = await currentSoldier();
+  if (data?.type === 'enlisted') {
+    redirect('/points/request');
+  }
+}
 
 export default function UsePointFormPage() {
   const [form] = Form.useForm();
@@ -29,6 +34,7 @@ export default function UsePointFormPage() {
     form,
     preserve: true,
   });
+  const [reason, setReason] = useState<string>('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -53,7 +59,7 @@ export default function UsePointFormPage() {
     setSearching(true);
     searchEnlisted(query || '').then((value) => {
       setSearching(false);
-      setOptions(value as any);
+      setOptions(value);
     });
   }, [query]);
 
@@ -91,9 +97,9 @@ export default function UsePointFormPage() {
           name='givenAt'
           label='받은 날짜'
           colon={false}
+          initialValue={dayjs().locale('ko')}
         >
           <DatePicker
-            defaultValue={dayjs().locale('ko')}
             disabled
             picker='date'
             inputReadOnly
@@ -119,7 +125,7 @@ export default function UsePointFormPage() {
               const { overtime, usedOvertime } = await fetchOvertimeSummary(
                 value,
               );
-              setAvailableOvertimes(Math.floor((overtime - usedOvertime)/1440));
+              setAvailableOvertimes(Math.floor((overtime - usedOvertime*1440)/1440));
             }}
           >
             <Input.Search loading={searching} />
@@ -137,19 +143,21 @@ export default function UsePointFormPage() {
             }
             type='number'
             inputMode='numeric'
+            onChange={(day) => form.setFieldValue('reason', day ? `초과근무 위로휴가 ${day}일 발급` : null)}
           />
         </Form.Item>
-        {/* <Form.Item<string>
+        <Form.Item<string>
           name='reason'
           rules={[{ required: true, message: '지급이유를 입력해주세요' }]}
         >
           <Input.TextArea
             showCount
+            // disabled
             maxLength={500}
             placeholder='초과근무 사용 이유'
             style={{ height: 150 }}
           />
-        </Form.Item> */}
+        </Form.Item>
         <Form.Item>
           <Button
             ghost={false}

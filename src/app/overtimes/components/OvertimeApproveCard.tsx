@@ -25,7 +25,7 @@ import {
 } from 'react';
 
 export type OvertimeApproveCardProps = {
-  overtimeId: number;
+  overtimeId: string;
 };
 
 export function OvertimeApproveCard({ overtimeId }: OvertimeApproveCardProps) {
