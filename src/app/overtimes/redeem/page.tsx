@@ -1,8 +1,9 @@
 'use client';
 
 import {
-  fetchPointSummary,
-  redeemPoint,
+  currentSoldier,
+  fetchOvertimeSummary,
+  redeemOvertime,
   searchEnlisted,
 } from '@/app/actions';
 import {
@@ -16,23 +17,28 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { checkIfNco } from '../give/actions';
-import { debounce } from 'lodash';
+import { redirect, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+
+export async function checkIfNco() {
+  const data = await currentSoldier();
+  if (data?.type === 'enlisted') {
+    redirect('/points/request');
+  }
+}
 
 export default function UsePointFormPage() {
   const [form] = Form.useForm();
   const router = useRouter();
-  // const query = Form.useWatch('giverId', {
-  //   form,
-  //   preserve: true,
-  // });
-  const [query, setQuery] = useState('');
+  const query = Form.useWatch('giverId', {
+    form,
+    preserve: true,
+  });
+  const [reason, setReason] = useState<string>('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [availablePoints, setAvailablePoints] = useState<number | null>();
+  const [availableOvertimes, setAvailableOvertimes] = useState<number | null>();
   const { message } = App.useApp();
 
   const renderPlaceholder = useCallback(
@@ -49,18 +55,6 @@ export default function UsePointFormPage() {
     checkIfNco();
   }, []);
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((value: string) => {
-        setQuery(value);
-      }, 300),
-    [],
-  );
-
-  const handleSearch = (value: string) => {
-    debouncedSearch(value);
-  };
-
   useEffect(() => {
     setSearching(true);
     searchEnlisted(query || '').then((value) => {
@@ -73,16 +67,17 @@ export default function UsePointFormPage() {
     async (newForm: any) => {
       await form.validateFields();
       setLoading(true);
-      redeemPoint({
+      redeemOvertime({
         ...newForm,
         value: newForm.value,
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
             message.error(newMessage);
+          } else {
+            message.success('초과근무를 성공적으로 사용했습니다');
           }
-          message.success('상점을 성공적으로 사용했습니다');
-          router.push('/points');
+          router.push('/overtimes');
         })
         .finally(() => {
           setLoading(false);
@@ -102,9 +97,9 @@ export default function UsePointFormPage() {
           name='givenAt'
           label='받은 날짜'
           colon={false}
+          initialValue={dayjs().locale('ko')}
         >
           <DatePicker
-            defaultValue={dayjs().locale('ko')}
             disabled
             picker='date'
             inputReadOnly
@@ -114,7 +109,7 @@ export default function UsePointFormPage() {
           label={'사용 대상자'}
           name={'userId'}
           rules={[
-            { required: true, message: '수령자를 입력해주세요' },
+            { required: true, message: '대상자를 입력해주세요' },
             {
               pattern: /^[0-9]{2}-[0-9]{5,8}$/,
               message: '잘못된 군번입니다',
@@ -127,28 +122,28 @@ export default function UsePointFormPage() {
               label: renderPlaceholder(t),
             }))}
             onChange={async (value) => {
-              const { merit, usedMerit, demerit } = await fetchPointSummary(
+              const { overtime, usedOvertime } = await fetchOvertimeSummary(
                 value,
               );
-              setAvailablePoints(merit - usedMerit + demerit);
+              setAvailableOvertimes(Math.floor((overtime - usedOvertime*1440)/1440));
             }}
-            onSearch={handleSearch}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
         </Form.Item>
         <Form.Item<number>
           name='value'
-          rules={[{ required: true, message: '상벌점을 입력해주세요' }]}
+          rules={[{ required: true, message: '휴가 일수를 입력해주세요' }]}
         >
           <InputNumber
             min={1}
             controls
             addonAfter={
-              availablePoints != null ? `/ ${availablePoints}점` : '점'
+              availableOvertimes != null ? `/ ${availableOvertimes}일` : '일'
             }
             type='number'
             inputMode='numeric'
+            onChange={(day) => form.setFieldValue('reason', day ? `초과근무 위로휴가 ${day}일 발급` : null)}
           />
         </Form.Item>
         <Form.Item<string>
@@ -157,8 +152,9 @@ export default function UsePointFormPage() {
         >
           <Input.TextArea
             showCount
+            // disabled
             maxLength={500}
-            placeholder='상벌점 사용 이유'
+            placeholder='초과근무 사용 이유'
             style={{ height: 150 }}
           />
         </Form.Item>

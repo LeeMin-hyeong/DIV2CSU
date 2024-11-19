@@ -40,7 +40,7 @@ next-env.d.ts
 # netlify
 .netlify/
 
-.yarn/*
+.yarn
 !.yarn/releases
 !.yarn/plugins
 .pnp.*

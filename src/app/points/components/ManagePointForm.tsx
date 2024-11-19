@@ -3,7 +3,8 @@
 import {
   createPoint,
   searchPointsGiver,
-  searchPointsReceiver,
+  searchEnlisted,
+  searchCommander,
 } from '@/app/actions';
 import {
   App,
@@ -88,12 +89,14 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           if (newMessage) {
             message.error(newMessage);
           }
-          message.success(
-            type === 'request'
-              ? '상벌점 요청을 성공적으로 했습니다'
-              : '상벌점을 성공적으로 부여했습니다',
-          );
-          router.push('/points');
+          else {
+            message.success(
+              type === 'request'
+                ? '상벌점 요청을 성공적으로 했습니다'
+                : '상벌점을 성공적으로 부여했습니다',
+            );
+            router.push('/points');
+          }
         })
         .finally(() => {
           setLoading(false);

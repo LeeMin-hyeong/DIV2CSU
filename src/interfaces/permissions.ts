@@ -38,6 +38,7 @@ import z from 'zod';
 
 export const Permission = z.enum([
   'Admin',
+  'Commander',
   'UserAdmin',
   'DeleteUser',
   'VerifyUser',
