@@ -147,6 +147,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onPopupScroll={(e) => {e.stopPropagation()}}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

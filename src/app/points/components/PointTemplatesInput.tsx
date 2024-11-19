@@ -71,6 +71,7 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
       size='large'
       popupMatchSelectWidth
       options={options}
+      onPopupScroll={(e) => {e.stopPropagation()}}
     >
       <Input.Search
         size='large'
