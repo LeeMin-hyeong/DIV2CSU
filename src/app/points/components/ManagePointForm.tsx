@@ -18,10 +18,10 @@ import {
 } from 'antd';
 import locale from 'antd/es/date-picker/locale/ko_KR';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { debounce } from 'lodash';
 import { PointTemplatesInput } from '../components';
 import { checkIfNco } from '../give/actions';
-import LocaleProvider from 'antd/lib/locale';
 
 export type ManagePointFormProps = {
   type: 'request' | 'give';
@@ -31,10 +31,8 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const soldierQuery = Form.useWatch(type === 'request' ? 'giverId' : 'receiverId', {
-    form,
-    preserve: true,
-  });
+  const [query, setQuery] = useState('');
+  const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const commanderQuery = Form.useWatch('commanderId', {
     form,
     preserve: true,
@@ -61,20 +59,28 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     }
   }, [type]);
 
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setQuery(value);
+      }, 300),
+    [],
+  );
+
+  const handleSearch = (value: string) => {
+    debouncedSearch(value);
+  };
+
   useEffect(() => {
     setSearching(true);
-    if (type === 'request') {
-      searchPointsGiver(soldierQuery || '').then((value) => {
-        setSearching(false);
-        setSoldierOptions(value as any);
-      });
-    } else {
-      searchPointsReceiver(soldierQuery || '').then((value) => {
-        setSearching(false);
-        setSoldierOptions(value as any);
-      });
-    }
-  }, [soldierQuery, type]);
+    const searchFn =
+      type === 'request' ? searchPointsGiver : searchPointsReceiver;
+
+    searchFn(query).then((value) => {
+      setSearching(false);
+      setOptions(value);
+    });
+  }, [query, type]);
 
   useEffect(() => {
     setSearching(true);
