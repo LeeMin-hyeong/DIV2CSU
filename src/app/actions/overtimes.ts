@@ -399,7 +399,7 @@ export async function redeemOvertime({
         )
         .executeTakeFirstOrThrow(),
     ]);
-    if (parseInt(total, 10) - parseInt(used_overtimes, 10) < value*1440) {
+    if (parseInt(total, 10) - parseInt(used_overtimes, 10)*1440 < value*1440) {
       return { message: '초과근무 시간이 부족합니다' };
     }
     await kysely

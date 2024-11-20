@@ -17,8 +17,9 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
+import { debounce } from 'lodash';
 import { redirect, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 export async function checkIfNco() {
   const data = await currentSoldier();
@@ -30,11 +31,7 @@ export async function checkIfNco() {
 export default function UsePointFormPage() {
   const [form] = Form.useForm();
   const router = useRouter();
-  const query = Form.useWatch('giverId', {
-    form,
-    preserve: true,
-  });
-  const [reason, setReason] = useState<string>('');
+  const [query, setQuery] = useState('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -54,6 +51,18 @@ export default function UsePointFormPage() {
   useLayoutEffect(() => {
     checkIfNco();
   }, []);
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setQuery(value);
+      }, 300),
+    [],
+  );
+
+  // const handleSearch = (value: string) => {
+  //   debouncedSearch(value);
+  // };
 
   useEffect(() => {
     setSearching(true);
@@ -127,6 +136,7 @@ export default function UsePointFormPage() {
               );
               setAvailableOvertimes(Math.floor((overtime - usedOvertime*1440)/1440));
             }}
+            onSearch={debouncedSearch}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

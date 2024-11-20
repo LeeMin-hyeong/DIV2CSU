@@ -16,22 +16,17 @@ import {
 } from 'antd';
 import locale from 'antd/es/date-picker/locale/ko_KR';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
+import { debounce } from 'lodash';
 
 export function ManageOvertimeForm() {
   const [form] = Form.useForm();
   const router = useRouter();
-  const soldierQuery = Form.useWatch('giverId', {
-    form,
-    preserve: true,
-  });
-  const approverQuery = Form.useWatch('approverId', {
-    form,
-    preserve: true,
-  });
+  const [soldierQuery, setSoldierQuery] = useState('');
+  const [approverQuery, setApproverQuery] = useState('');
   const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
-  const [approverOptions, setApproverOptions] =useState<{ name: string; sn: string }[]>([]);
+  const [approverOptions, setApproverOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
@@ -50,6 +45,11 @@ export function ManageOvertimeForm() {
     ),
     [],
   );
+
+  const debouncedSearch = useMemo(() => ({
+    soldier: debounce((value) => setSoldierQuery(value), 300),
+    approver: debounce((value) => setApproverQuery(value), 300),
+  }), []);
 
   useEffect(() => {
     setSearching(true);
@@ -205,6 +205,7 @@ export function ManageOvertimeForm() {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onSearch={debouncedSearch.soldier}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
@@ -222,6 +223,7 @@ export function ManageOvertimeForm() {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onSearch={debouncedSearch.approver}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

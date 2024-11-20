@@ -4,7 +4,6 @@ import {
   createPoint,
   searchPointsGiver,
   searchEnlisted,
-  searchCommander,
 } from '@/app/actions';
 import {
   App,
@@ -67,8 +66,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
 
   useEffect(() => {
     setSearching(true);
-    const searchFn =
-      type === 'request' ? searchPointsGiver : searchPointsReceiver;
+    const searchFn = type === 'request' ? searchPointsGiver : searchEnlisted;
 
     searchFn(query).then((value) => {
       setSearching(false);
