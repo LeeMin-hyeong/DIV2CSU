@@ -13,6 +13,9 @@ export function sortPermission(permissions: Permission[]) {
   if (permissions.includes('Admin')) {
     permissions = ['Admin'];
   }
+  if (permissions.includes('Commander')) {
+    permissions = permissions.concat('Commander')
+  }
   if (permissions.includes('UserAdmin')) {
     permissions = permissions
       .filter((p) => !p.includes('User'))

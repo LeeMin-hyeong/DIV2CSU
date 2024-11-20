@@ -4,6 +4,7 @@ import {
   createPoint,
   searchPointsGiver,
   searchPointsReceiver,
+  searchCommander,
 } from '@/app/actions';
 import {
   App,
@@ -32,6 +33,12 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
+  const commanderQuery = Form.useWatch('commanderId', {
+    form,
+    preserve: true,
+  });
+  const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [commanderOptions, setCommanderOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
@@ -75,6 +82,15 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     });
   }, [query, type]);
 
+  useEffect(() => {
+    setSearching(true);
+    searchCommander(commanderQuery || '').then((value) => {
+      setSearching(false);
+      setCommanderOptions(value as any);
+    });
+
+  }, [commanderQuery]);
+
   const handleSubmit = useCallback(
     async (newForm: any) => {
       await form.validateFields();
@@ -88,12 +104,14 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           if (newMessage) {
             message.error(newMessage);
           }
-          message.success(
-            type === 'request'
-              ? '상벌점 요청을 성공적으로 했습니다'
-              : '상벌점을 성공적으로 부여했습니다',
-          );
-          router.push('/points');
+          else {
+            message.success(
+              type === 'request'
+                ? '상벌점 요청을 성공적으로 했습니다'
+                : '상벌점을 성공적으로 부여했습니다',
+            );
+            router.push('/points');
+          }
         })
         .finally(() => {
           setLoading(false);
@@ -142,8 +160,24 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           ]}
         >
           <AutoComplete
-            onSearch={handleSearch} // Debounced search handler
-            options={options.map((t) => ({
+            options={soldierOptions.map((t) => ({
+              value: t.sn,
+              label: renderPlaceholder(t),
+            }))}
+          >
+            <Input.Search loading={searching} />
+          </AutoComplete>
+        </Form.Item>
+        <Form.Item<string>
+          label='승인자'
+          name='commanderId'
+          rules={[
+            { required: true, message: '승인자를 입력해주세요' },
+            { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
+          ]}
+        >
+          <AutoComplete
+            options={commanderOptions.map((t) => ({
               value: t.sn,
               label: renderPlaceholder(t),
             }))}

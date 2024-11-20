@@ -11,8 +11,9 @@ export async function fetchPoint(pointId: string) {
     .where('id', '=', pointId)
     .leftJoin('soldiers as g', 'g.sn', 'points.giver_id')
     .leftJoin('soldiers as r', 'r.sn', 'points.receiver_id')
+    .leftJoin('soldiers as c', 'c.sn', 'points.commander_id')
     .selectAll(['points'])
-    .select(['r.name as receiver', 'g.name as giver'])
+    .select(['r.name as receiver', 'g.name as giver', 'c.name as commander'])
     .executeTakeFirst();
 }
 
@@ -64,22 +65,30 @@ export async function fetchPointsCountsNco() {
   const query = kysely
     .selectFrom('points')
     .where('giver_id', '=', sn!)
-  const [{ verified }, { pending }, { rejected }] = await Promise.all([
+  const [{ approved }, { pending },{ needApprove }, { rejected }] = await Promise.all([
     query
-    .where('verified_at', 'is not', null)
-    .select((eb) => eb.fn.count<number>('id').as('verified'))
-    .executeTakeFirstOrThrow(),
+      .where('approved_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('approved'))
+      .executeTakeFirstOrThrow(),
     query
       .where('verified_at', 'is', null)
       .where('rejected_at', 'is', null)
       .select((eb) => eb.fn.count<number>('id').as('pending'))
       .executeTakeFirstOrThrow(),
+    kysely
+      .selectFrom('points')
+      .where('commander_id', '=', sn!)
+      .where('verified_at', 'is not', null)
+      .where('rejected_at', 'is', null)
+      .where('approved_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('needApprove'))
+      .executeTakeFirstOrThrow(),
     query
       .where('rejected_at', 'is not', null)
       .select((eb) => eb.fn.count<number>('id').as('rejected'))
       .executeTakeFirstOrThrow(),
-    ]);
-  return { verified, pending, rejected };
+  ]);
+  return { approved, pending, needApprove, rejected };
 }
 
 export async function fetchPointsCountsEnlisted() {
@@ -87,10 +96,10 @@ export async function fetchPointsCountsEnlisted() {
   const query = kysely
     .selectFrom('points')
     .where('receiver_id', '=', sn!)
-  const [{ verified }, { pending }, { rejected }] = await Promise.all([
+  const [{ approved }, { pending },{ needApprove }, { rejected }] = await Promise.all([
     query
-      .where('verified_at', 'is not', null)
-      .select((eb) => eb.fn.count<number>('id').as('verified'))
+      .where('approved_at', 'is not', null)
+      .select((eb) => eb.fn.count<number>('id').as('approved'))
       .executeTakeFirstOrThrow(),
     query
       .where('verified_at', 'is', null)
@@ -98,11 +107,28 @@ export async function fetchPointsCountsEnlisted() {
       .select((eb) => eb.fn.count<number>('id').as('pending'))
       .executeTakeFirstOrThrow(),
     query
+      .where('verified_at', 'is not', null)
+      .where('rejected_at', 'is', null)
+      .where('approved_at', 'is', null)
+      .select((eb) => eb.fn.count<number>('id').as('needApprove'))
+      .executeTakeFirstOrThrow(),
+    query
       .where('rejected_at', 'is not', null)
       .select((eb) => eb.fn.count<number>('id').as('rejected'))
       .executeTakeFirstOrThrow(),
-    ]);
-  return { verified, pending, rejected };
+  ]);
+  return { approved, pending, needApprove, rejected };
+}
+
+export async function fetchApprovePoints() {
+  const { sn } = await currentSoldier();
+  return kysely
+    .selectFrom('points')
+    .where('commander_id', '=', sn!)
+    .where('verified_at', 'is not', null)
+    .where('approved_at', 'is', null)
+    .selectAll()
+    .execute();
 }
 
 export async function deletePoint(pointId: string) {
@@ -117,7 +143,7 @@ export async function deletePoint(pointId: string) {
   if (data.receiver_id !== sn) {
     return { message: '본인 상벌점만 삭제 할 수 있습니다' };
   }
-  if (data.verified_at) {
+  if (data.approved_at) {
     return { message: '이미 승인된 상벌점은 지울 수 없습니다' };
   }
   try {
@@ -177,6 +203,52 @@ export async function verifyPoint(
   }
 }
 
+export async function approvePoint(
+  pointId: number,
+  value: boolean,
+  disapprovedReason?: string,
+) {
+  const [point, current] = await Promise.all([
+    fetchPoint(pointId),
+    currentSoldier(),
+  ]);
+  if (point == null) {
+    return { message: '본 상벌점이 존재하지 않습니다' };
+  }
+  if (point.commander_id !== current.sn) {
+    return { message: '본인한테 요청된 상벌점만 승인/반려 할 수 있십니다' };
+  }
+  if (current.type === 'enlisted') {
+    return { message: '용사는 상벌점을 승인/반려 할 수 없습니다' };
+  }
+  if (!value && disapprovedReason == null) {
+    return { message: '반려 사유를 입력해주세요' };
+  }
+  if (value) {
+    const { message } = checkIfSoldierHasPermission(
+      point.value,
+      current.permissions,
+    );
+    if (message) {
+      return { message };
+    }
+  }
+  try {
+    await kysely
+      .updateTable('points')
+      .where('id', '=', pointId)
+      .set({
+        approved_at: value ? new Date() : null,
+        disapproved_at: !value ? new Date() : null,
+        disapproved_reason: disapprovedReason,
+      })
+      .executeTakeFirstOrThrow();
+    return { message: null };
+  } catch (e) {
+    return { message: '승인/반려에 실패하였습니다' };
+  }
+}
+
 export async function fetchPointSummary(sn: string) {
   const pointsQuery = kysely.selectFrom('points').where('receiver_id', '=', sn);
   const usedPointsQuery = kysely
@@ -185,12 +257,14 @@ export async function fetchPointSummary(sn: string) {
   const [meritData, demeritData, usedMeritData] = await Promise.all([
     pointsQuery
       .where('value', '>', 0)
-      .where('verified_at', 'is not', null) // verified_at이 null이 아닌 경우
+      .where('verified_at', 'is not', null)
+      .where('approved_at', 'is not', null)
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
     pointsQuery
       .where('value', '<', 0)
       .where('verified_at', 'is not', null) // 승인된 상벌점만 가져오도록 수정
+      .where('approved_at', 'is not', null)
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
     usedPointsQuery
@@ -209,12 +283,14 @@ export async function createPoint({
   value,
   giverId,
   receiverId,
+  commanderId,
   reason,
   givenAt,
 }: {
   value:       number;
   giverId?:    string | null;
   receiverId?: string | null;
+  commanderId: string;
   reason:      string;
   givenAt:     Date;
 }) {
@@ -237,8 +313,15 @@ export async function createPoint({
   const target = await fetchSoldier(
     type === 'enlisted' ? giverId! : receiverId!,
   );
-  if (target == null) {
+  if (target.sn == null) {
     return { message: '대상이 존재하지 않습니다' };
+  }
+  const commander = await fetchSoldier(commanderId);
+  if (commander.sn == null) {
+    return { message: '최종 승인 지휘관이 존재하지 않습니다'}
+  }
+  if (!hasPermission(commander.permissions, ['Admin', 'Commander'])){
+    return { message: '해당 승인자는 중대장급 이상 지휘관이 아닙니다'}
   }
   if (type === 'enlisted') {
     if (giverId === sn) {
@@ -251,6 +334,7 @@ export async function createPoint({
           given_at:    givenAt,
           receiver_id: sn!,
           giver_id:    giverId!,
+          commander_id: commanderId,
           value,
           reason,
           verified_at: null,
@@ -271,11 +355,15 @@ export async function createPoint({
       .values({
         given_at:    givenAt,
         receiver_id: receiverId!,
-        giver_id:    sn!,
+        reason,
+        giver_id: sn!,
+        commander_id: commanderId,
+        given_at: givenAt,
         value,
         reason,
         verified_at: new Date(),
-      } as any)
+        approved_at: sn === commander.sn ? new Date() : null
+      })
       .executeTakeFirstOrThrow();
     return { message: null };
   } catch (e) {
@@ -324,6 +412,7 @@ export async function redeemPoint({
         .selectFrom('points')
         .where('receiver_id', '=', userId)
         .where('verified_at', 'is not', null)
+        .where('approved_at', 'is not', null)
         .select(({ fn }) =>
           fn
             .coalesce(fn.sum<string>('points.value'), sql<string>`0`)

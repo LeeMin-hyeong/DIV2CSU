@@ -28,6 +28,10 @@ export function PermissionsTransfer({
           key: 'Admin',
           children: [
             {
+              ...ALL_PERMISSIONS.Commander,
+              key: 'Commander',
+            },
+            {
               ...ALL_PERMISSIONS.UserAdmin,
               children: Object.values(ALL_PERMISSIONS).filter(({ key }) =>
                 key.endsWith('User'),
