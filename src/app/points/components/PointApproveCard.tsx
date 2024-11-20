@@ -25,7 +25,7 @@ import {
 } from 'react';
 
 export type PointApproveCardProps = {
-  pointId: number;
+  pointId: string;
 };
 
 export function PointApproveCard({ pointId }: PointApproveCardProps) {
@@ -106,6 +106,8 @@ export function PointApproveCard({ pointId }: PointApproveCardProps) {
                 <p>{point.giver}</p>
                 <ArrowRightOutlined className='mx-2' />
                 <p>{point.receiver}</p>
+                <p className='mx-2' />
+                <p>(승인자 : {point.commander})</p>
               </div>
               <p>{`${point?.value ?? 0}점`}</p>
             </div>

@@ -204,7 +204,7 @@ export async function verifyPoint(
 }
 
 export async function approvePoint(
-  pointId: number,
+  pointId: string,
   value: boolean,
   disapprovedReason?: string,
 ) {
@@ -353,17 +353,15 @@ export async function createPoint({
     await kysely
       .insertInto('points')
       .values({
-        given_at:    givenAt,
-        receiver_id: receiverId!,
-        reason,
-        giver_id: sn!,
+        given_at:     givenAt,
+        receiver_id:  receiverId!,
+        giver_id:     sn!,
         commander_id: commanderId,
-        given_at: givenAt,
-        value,
+        verified_at:  new Date(),
+        approved_at:  sn === commander.sn ? new Date() : null,
         reason,
-        verified_at: new Date(),
-        approved_at: sn === commander.sn ? new Date() : null
-      })
+        value,
+      } as any)
       .executeTakeFirstOrThrow();
     return { message: null };
   } catch (e) {
@@ -445,7 +443,7 @@ export async function redeemPoint({
   } catch (e) {
     return { message: '알 수 없는 오류가 발생했습니다' };
   }
-}
+} 
 
 export async function fetchPointTemplates() {
   return kysely.selectFrom('point_templates').selectAll().execute();

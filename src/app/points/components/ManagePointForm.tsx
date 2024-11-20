@@ -31,12 +31,8 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
-  const commanderQuery = Form.useWatch('commanderId', {
-    form,
-    preserve: true,
-  });
+  const [soldierQuery, setSoldierQuery] = useState('');
+  const [commanderQuery, setCommanderQuery] = useState('');
   const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
   const [commanderOptions, setCommanderOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -59,28 +55,21 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     }
   }, [type]);
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((value: string) => {
-        setQuery(value);
-      }, 300),
-    [],
-  );
-
-  const handleSearch = (value: string) => {
-    debouncedSearch(value);
-  };
+  const debouncedSearch = useMemo(() => ({
+    soldier: debounce((value) => setSoldierQuery(value), 300),
+    commander: debounce((value) => setCommanderQuery(value), 300),
+  }), []);
 
   useEffect(() => {
     setSearching(true);
     const searchFn =
       type === 'request' ? searchPointsGiver : searchPointsReceiver;
 
-    searchFn(query).then((value) => {
+    searchFn(soldierQuery).then((value) => {
       setSearching(false);
-      setOptions(value);
+      setSoldierOptions(value);
     });
-  }, [query, type]);
+  }, [soldierQuery, type]);
 
   useEffect(() => {
     setSearching(true);
@@ -164,6 +153,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onSearch={debouncedSearch.soldier}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
@@ -181,6 +171,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onSearch={debouncedSearch.commander}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

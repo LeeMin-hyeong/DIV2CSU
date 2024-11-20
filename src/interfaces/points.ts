@@ -4,6 +4,7 @@ export const Point = z.object({
   id:                 z.string().uuid(),    // 상벌점 ID
   giver_id:           z.string(),           // 상벌점을 부여한 사용자 ID
   receiver_id:        z.string(),           // 상벌점을 받은 사용자 ID
+  commander_id:       z.string(),           // 상벌점 최종 승인 지휘관 ID
   created_at:         z.date(),             // 상벌점 데이터 생성일
   verified_at:        z.date().nullable(),  // 상벌점 검증일
   value:              z.number(),           // 상벌점 값 (양수: 상점, 음수: 벌점)
