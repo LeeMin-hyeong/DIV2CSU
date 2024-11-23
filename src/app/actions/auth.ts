@@ -120,6 +120,7 @@ export async function signIn({
 const SignUpParams = Soldier.pick({
   sn:       true,
   password: true,
+  unit:     true,
   type:     true,
   name:     true,
 });
@@ -146,6 +147,7 @@ export async function signUp(
         name:     form.name,
         sn:       form.sn,
         type:     form.type,
+        unit:     form.unit,
         password: salt + hashed,
       } as any)
       .executeTakeFirstOrThrow();
