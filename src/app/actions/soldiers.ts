@@ -148,22 +148,27 @@ export async function GroupSoldiers() {
     const [ headquarters, supply, medical, transport, unclassified ] = await Promise.all([
       query
         .where('unit', '=', 'headquarters')
+        .orderBy('type desc')
         .selectAll()
         .execute(),
-      query
+        query
         .where('unit', '=', 'supply')
+        .orderBy('type desc')
         .selectAll()
         .execute(),
-      query
+        query
         .where('unit', '=', 'medical')
+        .orderBy('type desc')
         .selectAll()
         .execute(),
-      query
+        query
         .where('unit', '=', 'transport')
+        .orderBy('type desc')
         .selectAll()
         .execute(),
-      query
+        query
         .where('unit', 'is', null)
+        .orderBy('type desc')
         .selectAll()
         .execute(),
   ]);
