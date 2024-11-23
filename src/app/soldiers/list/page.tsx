@@ -1,8 +1,7 @@
 'use client';
 
 import { GroupSoldiers, listSoldiers } from '@/app/actions';
-import { Card, Collapse, ConfigProvider, Input, Pagination, Skeleton } from 'antd';
-import { useRouter } from 'next/navigation';
+import { Card, Collapse, ConfigProvider, Input, Skeleton } from 'antd';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { UserCard } from './components';
@@ -12,16 +11,14 @@ export default function ManageSoldiersPage({
 }: {
   searchParams: { page?: string };
 }) {
-  const router = useRouter();
   const [data, setData] = useState<
-    Awaited<ReturnType<typeof listSoldiers>>['data'] | null
+    Awaited<ReturnType<typeof listSoldiers>> | null
   >(null);
 
   const [groupedData, setGroupedData] = useState<
     Awaited<ReturnType<typeof GroupSoldiers>> | null
   >(null);
   const [query, setQuery] = useState<string>('');
-  const [count, setCount] = useState(1);
 
   // Debounced function to update query
   const updateQuery = useCallback(
@@ -38,20 +35,10 @@ export default function ManageSoldiersPage({
     [updateQuery]
   );
 
-  const handlePagination = useCallback(
-    (page: number) => {
-      router.push(`/soldiers/list?page=${page}`);
-    },
-    [router]
-  );
-
   useEffect(() => {
-    const page = parseInt(searchParams.page || '1', 10);
-
     if (query !== '') {
-      listSoldiers({ query, page }).then(({ count, data }) => {
+      listSoldiers({ query }).then((data) => {
         setData(data);
-        setCount(count);
         setGroupedData(null); // Clear grouped data
       });
     } else {
@@ -60,7 +47,7 @@ export default function ManageSoldiersPage({
         setData(null); // Clear regular data
       });
     }
-  }, [query, searchParams.page]);
+  }, [query]);
 
   useEffect(() => {
     // Cleanup debounce on unmount
@@ -115,8 +102,7 @@ export default function ManageSoldiersPage({
         <UserCard key={d.sn} {...d} />
       ))
       }
-      {groupedData && 
-      <ConfigProvider
+      {groupedData && <ConfigProvider
         theme={{
           components: {
             Collapse: {
@@ -128,15 +114,7 @@ export default function ManageSoldiersPage({
         }}
         >
         <Collapse items={items} />
-      </ConfigProvider>
-      }
-      {data && <Pagination
-        className='mt-2 self-center'
-        pageSize={10}
-        total={count}
-        current={parseInt(searchParams.page || '1', 10)}
-        onChange={handlePagination}
-      />}
+      </ConfigProvider>}
     </div>
   );
 }

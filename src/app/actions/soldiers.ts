@@ -83,6 +83,16 @@ export async function listUnverifiedSoldiers() {
   return { message: null, data };
 }
 
+export async function fetchUnverifiedSoldiersCount() {
+  const { count } = await kysely
+    .selectFrom('soldiers')
+    .where('verified_at', 'is', null)
+    .where('rejected_at', 'is', null)
+    .select((eb) => eb.fn.count<number>('sn').as('count'))
+    .executeTakeFirstOrThrow();
+  return count;
+}
+
 export async function verifySoldier(sn: string, value: boolean) {
   try {
     const current = await currentSoldier();
@@ -112,37 +122,21 @@ export async function verifySoldier(sn: string, value: boolean) {
   }
 }
 
-export async function listSoldiers({
-  query,
-  page,
-}: {
-  query?: string | null;
-  page?:  number | null;
-}) {
-  // await currentSoldier();
-  const [{ count }, data] = await Promise.all([
-    kysely
-      .selectFrom('soldiers')
-      .select((eb) => eb.fn.count<string>('sn').as('count'))
-      .executeTakeFirstOrThrow(),
-    kysely
-      .selectFrom('soldiers')
-      .where((eb) =>
-        eb.and([
-          eb.or([eb('sn', 'like', `%${query}%`), eb('name', 'like', `%${query}%`)]),
-          eb.or([
-            eb('rejected_at', 'is not', null),
-            eb('verified_at', 'is not', null),
-          ]),
-          eb('deleted_at', 'is', null), // 삭제된 유저 제외
+export async function listSoldiers({ query }: { query?: string | null }) {
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb.or([eb('sn', 'like', `%${query}%`), eb('name', 'like', `%${query}%`)]),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
         ]),
-      )
-      .limit(10)
-      .$if(page != null, (qb) => qb.offset(Math.max(1, page!) * 10 - 10))
-      .select(['sn', 'name', 'type', 'deleted_at', 'rejected_at'])
-      .execute(),
-  ]);
-  return { count: parseInt(count, 10), data };
+        eb('deleted_at', 'is', null), // 삭제된 유저 제외
+      ]),
+    )
+    .selectAll()
+    .execute();
 }
 
 export async function GroupSoldiers() {

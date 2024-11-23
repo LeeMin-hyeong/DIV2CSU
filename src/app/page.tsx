@@ -1,6 +1,6 @@
-import { currentSoldier, fetchPointsCountsEnlisted, fetchPointsCountsNco } from "./actions";
+import { currentSoldier, fetchPointsCountsEnlisted, fetchPointsCountsNco, fetchUnverifiedSoldiersCount, hasPermission } from "./actions";
 import { TotalPointBox } from "./points/components";
-import { Card } from "antd";
+import { Card, Divider } from "antd";
 import Link from "next/link";
 
 export default async function Home() {
@@ -10,6 +10,18 @@ export default async function Home() {
     const {verified, pending, rejected} = await fetchPointsCountsNco();
     return (
       <div>
+        {hasPermission(user.permissions, ['Admin', 'UserAdmin', 'VerifyUser']) ?
+        <div>
+          <Link href={'/soldiers/signup'}>
+            <Card className='my-1 mx-1'>
+              <div className='flex flex-row items-center justify-between'>
+                <p className='font-bold'> 회원가입 승인 요청 </p>
+                <p className='font-bold'> { await fetchUnverifiedSoldiersCount() } 건 </p>
+              </div>
+            </Card>
+          </Link>
+          <Divider/>
+        </div> : null}
         <Link href={`/points`}>
           <Card className='my-1 mx-1'>
             <div className='flex flex-row items-center justify-between'>

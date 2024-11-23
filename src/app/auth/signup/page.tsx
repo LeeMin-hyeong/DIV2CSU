@@ -75,6 +75,7 @@ export default function SignUpPage() {
               <Radio.Button value='supply'>보급</Radio.Button>
               <Radio.Button value='medical'>의무</Radio.Button>
               <Radio.Button value='transport'>수송</Radio.Button>
+              <Radio.Button value={null}>미분류</Radio.Button>
           </Radio.Group>
         </Form.Item>
         <Form.Item<string>
