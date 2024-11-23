@@ -119,7 +119,7 @@ export async function listSoldiers({
   query?: string | null;
   page?:  number | null;
 }) {
-  await currentSoldier();
+  // await currentSoldier();
   const [{ count }, data] = await Promise.all([
     kysely
       .selectFrom('soldiers')
@@ -129,7 +129,7 @@ export async function listSoldiers({
       .selectFrom('soldiers')
       .where((eb) =>
         eb.and([
-          eb.or([eb('sn', '=', query ?? ''), eb('name', 'like', `%${query}%`)]),
+          eb.or([eb('sn', 'like', `%${query}%`), eb('name', 'like', `%${query}%`)]),
           eb.or([
             eb('rejected_at', 'is not', null),
             eb('verified_at', 'is not', null),
@@ -143,6 +143,37 @@ export async function listSoldiers({
       .execute(),
   ]);
   return { count: parseInt(count, 10), data };
+}
+
+export async function GroupSoldiers() {
+  const query = kysely
+    .selectFrom('soldiers')
+    .where('rejected_at', 'is', null)
+    .where('verified_at', 'is not', null)
+    .where('deleted_at', 'is', null);
+    const [ headquarters, supply, medical, transport, unclassified ] = await Promise.all([
+      query
+        .where('unit', '=', 'headquarters')
+        .selectAll()
+        .execute(),
+      query
+        .where('unit', '=', 'supply')
+        .selectAll()
+        .execute(),
+      query
+        .where('unit', '=', 'medical')
+        .selectAll()
+        .execute(),
+      query
+        .where('unit', '=', 'transport')
+        .selectAll()
+        .execute(),
+      query
+        .where('unit', 'is', null)
+        .selectAll()
+        .execute(),
+  ]);
+  return { headquarters, supply, medical, transport, unclassified };
 }
 
 export async function searchPointsReceiver(query: string) {

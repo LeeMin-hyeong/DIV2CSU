@@ -1,9 +1,9 @@
 'use client';
 
-import { listSoldiers } from '@/app/actions';
-import { Card, Input, Pagination, Skeleton } from 'antd';
+import { GroupSoldiers, listSoldiers } from '@/app/actions';
+import { Card, Collapse, ConfigProvider, Input, Pagination, Skeleton } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { UserCard } from './components';
 
@@ -17,7 +17,10 @@ export default function ManageSoldiersPage({
     Awaited<ReturnType<typeof listSoldiers>>['data'] | null
   >(null);
 
-  const [query, setQuery] = useState('');
+  const [groupedData, setGroupedData] = useState<
+    Awaited<ReturnType<typeof GroupSoldiers>> | null
+  >(null);
+  const [query, setQuery] = useState<string>('');
   const [count, setCount] = useState(1);
 
   // Debounced function to update query
@@ -43,12 +46,20 @@ export default function ManageSoldiersPage({
   );
 
   useEffect(() => {
-    listSoldiers({ query, page: parseInt(searchParams.page || '1', 10) }).then(
-      ({ count, data }) => {
+    const page = parseInt(searchParams.page || '1', 10);
+
+    if (query !== '') {
+      listSoldiers({ query, page }).then(({ count, data }) => {
         setData(data);
         setCount(count);
-      }
-    );
+        setGroupedData(null); // Clear grouped data
+      });
+    } else {
+      GroupSoldiers().then((group) => {
+        setGroupedData(group);
+        setData(null); // Clear regular data
+      });
+    }
   }, [query, searchParams.page]);
 
   useEffect(() => {
@@ -58,10 +69,41 @@ export default function ManageSoldiersPage({
     };
   }, [updateQuery]);
 
+  const items = useMemo(() => {
+    if (!groupedData) return [];
+    return [
+      {
+        key: 'headquarters',
+        label: `본부 (${groupedData.headquarters.length})`,
+        children: groupedData.headquarters.map((d) => <UserCard key={d.sn} {...d} />),
+      },
+      {
+        key: 'supply',
+        label: `보급 (${groupedData.supply.length})`,
+        children: groupedData.supply.map((d) => <UserCard key={d.sn} {...d} />),
+      },
+      {
+        key: 'medical',
+        label: `의무 (${groupedData.medical.length})`,
+        children: groupedData.medical.map((d) => <UserCard key={d.sn} {...d} />),
+      },
+      {
+        key: 'transport',
+        label: `수송 (${groupedData.transport.length})`,
+        children: groupedData.transport.map((d) => <UserCard key={d.sn} {...d} />),
+      },
+      {
+        key: 'unclassified',
+        label: `미분류 (${groupedData.unclassified.length})`,
+        children: groupedData.unclassified.map((d) => <UserCard key={d.sn} {...d} />),
+      },
+    ];
+  }, [groupedData]);
+
   return (
     <div className='flex flex-1 flex-col'>
       <Input placeholder='검색' onChange={onChangeQuery} />
-      {data == null &&
+      {data == null && groupedData == null &&
         Array(10)
           .fill(0)
           .map((_, i) => (
@@ -71,14 +113,30 @@ export default function ManageSoldiersPage({
           ))}
       {data?.map((d) => (
         <UserCard key={d.sn} {...d} />
-      ))}
-      <Pagination
+      ))
+      }
+      {groupedData && 
+      <ConfigProvider
+        theme={{
+          components: {
+            Collapse: {
+              headerBg: '#ffffff',
+              contentPadding: '0px 0px',
+              contentBg: 'rgba(0, 0, 0, 0.02)'
+            },
+          },
+        }}
+        >
+        <Collapse items={items} />
+      </ConfigProvider>
+      }
+      {data && <Pagination
         className='mt-2 self-center'
         pageSize={10}
         total={count}
         current={parseInt(searchParams.page || '1', 10)}
         onChange={handlePagination}
-      />
+      />}
     </div>
   );
 }
