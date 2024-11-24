@@ -8,6 +8,7 @@ export default async function Home() {
 
   if(user.type == 'nco'){
     const {verified, pending, rejected} = await fetchPointsCountsNco();
+    const needVerify = await fetchUnverifiedSoldiersCount()
     return (
       <div>
         {hasPermission(user.permissions, ['Admin', 'UserAdmin', 'VerifyUser']) ?
@@ -16,7 +17,7 @@ export default async function Home() {
             <Card className='my-1 mx-1'>
               <div className='flex flex-row items-center justify-between'>
                 <p className='font-bold'> 회원가입 승인 요청 </p>
-                <p className='font-bold'> { await fetchUnverifiedSoldiersCount() } 건 </p>
+                <p className='font-bold'> { needVerify } 건 </p>
               </div>
             </Card>
           </Link>
