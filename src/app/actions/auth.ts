@@ -160,12 +160,10 @@ export async function signUp(
   if (form.type === 'nco') {
     await kysely
       .insertInto('permissions')
-      .values(
-        ['GiveMeritPoint', 'GiveDemeritPoint'].map((p) => ({
+      .values({
           soldiers_id: form.sn,
-          value: p,
-        } as any)),
-      )
+          value:       'Nco',
+        } as any)
       .executeTakeFirst();
   }
   const accessToken = jwt.sign(
@@ -239,12 +237,7 @@ export async function resetPassword({
 
 export async function resetPasswordForce(sn: string) {
   const current = await currentSoldier();
-  if (
-    !hasPermission(
-      ['Admin', 'UserAdmin', 'ResetPasswordUser'],
-      current.permissions,
-    )
-  ) {
+  if (!hasPermission(['Admin', 'Commander', 'UserAdmin'], current.permissions,)) {
     return { message: '비밀번호 초기화 권한이 없습니다', password: null };
   }
   if (current.sn === sn) {

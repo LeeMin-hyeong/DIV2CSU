@@ -11,7 +11,7 @@ export default async function Home() {
     const needVerify = await fetchUnverifiedSoldiersCount()
     return (
       <div>
-        {hasPermission(user.permissions, ['Admin', 'UserAdmin', 'VerifyUser']) ?
+        {hasPermission(user.permissions, ['Admin', 'Commander', 'UserAdmin']) ?
         <div>
           <Link href={'/soldiers/signup'}>
             <Card className='my-1 mx-1'>

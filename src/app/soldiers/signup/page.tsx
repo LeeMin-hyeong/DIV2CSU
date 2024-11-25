@@ -9,7 +9,7 @@ export default async function ManageSignUpPage() {
     return (
       <div className='py-5 my-5'>
         <Empty
-          description={<p>요청된 회원 가입 승인이 없습니다</p>}
+          description={<p>회원 가입 승인 요청이 없습니다</p>}
         />
       </div>
     );
