@@ -2,8 +2,8 @@
 
 import {
   createPoint,
-  searchPointsGiver,
-  searchPointsReceiver,
+  searchEnlisted,
+  searchNco,
 } from '@/app/actions';
 import {
   App,
@@ -67,7 +67,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   useEffect(() => {
     setSearching(true);
     const searchFn =
-      type === 'request' ? searchPointsGiver : searchPointsReceiver;
+      type === 'request' ? searchNco : searchEnlisted;
 
     searchFn(query).then((value) => {
       setSearching(false);
@@ -87,13 +87,14 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
         .then(({ message: newMessage }) => {
           if (newMessage) {
             message.error(newMessage);
+          } else {
+            message.success(
+              type === 'request'
+                ? '상벌점 요청을 성공적으로 했습니다'
+                : '상벌점을 성공적으로 부여했습니다',
+            );
+            router.push('/points');
           }
-          message.success(
-            type === 'request'
-              ? '상벌점 요청을 성공적으로 했습니다'
-              : '상벌점을 성공적으로 부여했습니다',
-          );
-          router.push('/points');
         })
         .finally(() => {
           setLoading(false);

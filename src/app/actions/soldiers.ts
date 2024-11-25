@@ -70,7 +70,7 @@ export const fetchSoldier = cache(async (sn: string) => {
 export async function listUnverifiedSoldiers() {
   const current = await currentSoldier();
   if (
-    !hasPermission(current.permissions, ['Admin', 'UserAdmin', 'VerifyUser'])
+    !hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])
   ) {
     return { message: '권한이 없습니다', data: null };
   }
@@ -97,7 +97,7 @@ export async function verifySoldier(sn: string, value: boolean) {
   try {
     const current = await currentSoldier();
     if (
-      !hasPermission(current.permissions, ['Admin', 'UserAdmin', 'VerifyUser'])
+      !hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])
     ) {
       return {
         success: false,
@@ -175,7 +175,7 @@ export async function GroupSoldiers() {
   return { headquarters, supply, medical, transport, unclassified };
 }
 
-export async function searchPointsReceiver(query: string) {
+export async function searchEnlisted(query: string) {
   return kysely
     .selectFrom('soldiers')
     .where((eb) =>
@@ -189,13 +189,14 @@ export async function searchPointsReceiver(query: string) {
           eb('rejected_at', 'is not', null),
           eb('verified_at', 'is not', null),
         ]),
+        eb('deleted_at', 'is', null),
       ]),
     )
     .select(['sn', 'name'])
     .execute();
 }
 
-export async function searchPointsGiver(query: string) {
+export async function searchNco(query: string) {
   return kysely
     .selectFrom('soldiers')
     .where((eb) =>
@@ -209,21 +210,7 @@ export async function searchPointsGiver(query: string) {
           eb('rejected_at', 'is not', null),
           eb('verified_at', 'is not', null),
         ]),
-        eb.exists(
-          eb
-            .selectFrom('permissions')
-            .whereRef('permissions.soldiers_id', '=', 'soldiers.sn')
-            .having('value', 'in', [
-              'GiveMeritPoint',
-              'GiveLargeMeritPoint',
-              'GiveDemeritPoint',
-              'GiveLargeDemeritPoint',
-              'PointAdmin',
-              'Admin',
-            ])
-            .select('permissions.value')
-            .groupBy('permissions.value'),
-        ),
+        eb('deleted_at', 'is', null),
       ]),
     )
     .select(['sn', 'name'])
@@ -251,7 +238,7 @@ export async function deleteSoldier({
   if (target.permissions.includes('Admin')) {
     return { message: '관리자는 삭제할 수 없습니다' };
   }
-  if (!hasPermission(permissions, ['Admin', 'UserAdmin', 'DeleteUser'])) {
+  if (!hasPermission(permissions, ['Admin', 'Commander', 'UserAdmin'])) {
     return { message: '유저 삭제 권한이 없습니다' };
   }
   await kysely

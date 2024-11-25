@@ -19,6 +19,7 @@ import {
   currentSoldier,
   deleteSoldier,
   fetchSoldier,
+  hasPermission,
   resetPasswordForce,
   updatePermissions,
 } from '../actions';
@@ -28,6 +29,7 @@ import {
   PasswordModal,
   PermissionsTransfer,
 } from './components';
+import { useRouter } from 'next/navigation';
 
 export default function MyProfilePage({
   searchParams: { sn },
@@ -47,6 +49,7 @@ export default function MyProfilePage({
   const [helpShown, setHelpShwon] = useState(false);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [newPassword, setNewPassword] = useState<string | null>(null);
+  const router = useRouter();
 
   useLayoutEffect(() => {
     Promise.all([currentSoldier(), sn ? fetchSoldier(sn) : null]).then(
@@ -63,16 +66,17 @@ export default function MyProfilePage({
   const handleUpdatePermissions = useCallback(() => {
     updatePermissions({ sn, permissions }).then(({ message: newMessage }) => {
       if (newMessage != null) {
-        return message.error(newMessage);
+        message.error(newMessage);
+      } else {
+        setTargetSoldier(
+          (state) =>
+            ({
+              ...state,
+              permissions: permissions,
+            } as any),
+        );
+        message.success('권한을 성공적으로 변경하였습니다');
       }
-      setTargetSoldier(
-        (state) =>
-          ({
-            ...state,
-            permissions: permissions,
-          } as any),
-      );
-      return message.success('권한을 성공적으로 변경하였습니다');
     });
   }, [sn, permissions]);
 
@@ -80,13 +84,7 @@ export default function MyProfilePage({
     if (isViewingMine) {
       return '본인 권한은 수정할 수 없습니다';
     }
-    if (
-      !_.intersection(mySoldier?.permissions ?? [], [
-        'Admin',
-        'UserAdmin',
-        'GivePermissionUser',
-      ])
-    ) {
+    if (!hasPermission(mySoldier!.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
       return '권한 변경 권한이 없습니다';
     }
     return null;
@@ -165,11 +163,7 @@ export default function MyProfilePage({
         </div>
       </div>
       <div className='my-3'>
-        {!isViewingMine &&
-          _.intersection(
-            ['Admin', 'PointAdmin', 'ViewPoint'],
-            mySoldier?.permissions,
-          ).length && (
+        {!isViewingMine && hasPermission(mySoldier!?.permissions, ['Admin', 'Commander']) && (
             <Button href={`/points?sn=${targetSoldier.sn}`}>
               상점 내역 보기
             </Button>

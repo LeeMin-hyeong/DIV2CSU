@@ -3,7 +3,7 @@
 import { Permission } from '@/interfaces';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
-import { hasPermission, sortPermission, validatePermission } from './utils';
+import { hasPermission, validatePermission } from './utils';
 
 export async function updatePermissions({
   sn,
@@ -20,13 +20,7 @@ export async function updatePermissions({
   if (target.permissions.includes('Admin')) {
     return { message: '관리자는 수정할 수 없습니다' };
   }
-  if (
-    !hasPermission(current.permissions, [
-      'Admin',
-      'UserAdmin',
-      'GivePermissionUser',
-    ])
-  ) {
+  if (!hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
     return { message: '권한 수정 권한이 없습니다' };
   }
   if (permissions.includes('Admin')) {
@@ -46,7 +40,7 @@ export async function updatePermissions({
     await kysely
       .insertInto('permissions')
       .values(
-        sortPermission(permissions).map((p) => ({ soldiers_id: sn, value: p } as any)),
+        permissions.map((p) => ({ soldiers_id: sn, value: p } as any)),
       )
       .executeTakeFirstOrThrow();
     return { message: null };
