@@ -27,7 +27,6 @@ export const ALL_PERMISSIONS: {
   Nco: {
     key: 'Nco',
     title: '상벌점 부여',
-    disabled: true,
   },
   Approver: {
     key: 'Approver',
