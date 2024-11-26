@@ -9,46 +9,20 @@ export function hasPermission(
   return !!_.intersection(requires, permissions).length;
 }
 
-export function sortPermission(permissions: Permission[]) {
-  if (permissions.includes('Admin')) {
-    permissions = ['Admin'];
-  }
-  if (permissions.includes('Commander')) {
-    permissions = permissions.concat('Commander')
-  }
-  if (permissions.includes('UserAdmin')) {
-    permissions = permissions
-      .filter((p) => !p.includes('User'))
-      .concat('UserAdmin');
-  }
-  if (permissions.includes('PointAdmin')) {
-    permissions = permissions
-      .filter((p) => !p.includes('Point'))
-      .concat('PointAdmin');
-  }
-  return permissions;
-}
-
 export function validatePermission(permissions: Permission[]) {
   const { success } = z.array(Permission).safeParse(permissions);
   return success;
 }
 
 export function checkIfSoldierHasPermission(value: number, scope: Permission[]) {
-  if (scope.includes('Admin') || scope.includes('PointAdmin')) {
+  if (scope.includes('Admin') || scope.includes('Commander')) {
     return { message: null };
   }
-  if (value > 0 && !scope.includes('GiveMeritPoint')) {
-    return { message: '상점을 줄 권한이 없습니다' };
+  if (!scope.includes('Nco')) {
+    return { message: '상벌점을 줄 권한이 없습니다' };
   }
-  if (value > 5 && !scope.includes('GiveLargeMeritPoint')) {
-    return { message: '5점 이상 상점을 줄 권한이 없습니다' };
-  }
-  if (value < 0 && !scope.includes('GiveDemeritPoint')) {
-    return { message: '벌점을 줄 권한이 없습니다' };
-  }
-  if (value < -5 && !scope.includes('GiveLargeDemeritPoint')) {
-    return { message: '5점 이상 벌점을 줄 권한이 없습니다' };
+  if ((value > 5 || value < -5) && !scope.includes('PointNco')) {
+    return { message: '5점 이상 상벌점을 줄 권한이 없습니다' };
   }
   return { message: null };
 }

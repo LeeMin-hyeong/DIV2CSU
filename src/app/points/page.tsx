@@ -1,8 +1,7 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { Divider, FloatButton } from 'antd';
-import { currentSoldier, fetchSoldier, listPoints } from '../actions';
-import { hasPermission } from '../actions/utils';
+import { currentSoldier, fetchSoldier, hasPermission, listPoints } from '../actions';
 import {
   PointListPagination,
   PointRequestList,
@@ -11,6 +10,7 @@ import {
   TotalPointBox,
   UsedPointsHorizontalList,
 } from './components';
+import { redirect } from 'next/navigation';
 
 async function EnlistedPage({ user, page }: { user: Soldier; page: number }) {
   const { data, count, usedPoints } = await listPoints(user?.sn, page);
@@ -132,6 +132,9 @@ export default async function ManagePointsPage({
   ]);
   const page = parseInt(searchParams?.page ?? '1', 10) || 1;
 
+  if(searchParams.sn && !hasPermission(profile.permissions, ['Admin', 'Commander'])){
+    redirect('/points')
+  }
   if (user.type === 'enlisted') {
     return (
       <EnlistedPage

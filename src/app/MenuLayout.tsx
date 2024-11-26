@@ -78,11 +78,8 @@ export function MenuLayout({
 
             hasPermission(data.permissions, [
               'Admin',
+              'Commander',
               'UserAdmin',
-              'DeleteUser',
-              'VerifyUser',
-              'ResetPasswordUser',
-              'GivePermissionUser'
             ]) ?
             {
               key: '/soldiers/#',
@@ -98,8 +95,8 @@ export function MenuLayout({
 
                 hasPermission(data.permissions, [
                   'Admin',
+                  'Commander',
                   'UserAdmin',
-                  'VerifyUser',
                 ])?
                 {
                   key: '/soldiers/signup',
@@ -133,11 +130,9 @@ export function MenuLayout({
                 hasPermission(data.permissions, [
                   'Admin',
                   'Commander',
-                  'PointAdmin',
-                  'GiveMeritPoint',
-                  'GiveLargeMeritPoint',
-                  'GiveDemeritPoint',
-                  'GiveLargeDemeritPoint',
+                  'UserAdmin',
+                  'PointNco',
+                  'Nco',
                 ]) ?
                 {
                   key: '/points/give',
@@ -149,8 +144,6 @@ export function MenuLayout({
                 hasPermission(data.permissions, [
                   'Admin',
                   'Commander',
-                  'PointAdmin',
-                  'UsePoint',
                 ]) ?
                 {
                   key: '/points/redeem',

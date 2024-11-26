@@ -3,7 +3,7 @@
 import {
   fetchPointSummary,
   redeemPoint,
-  searchPointsReceiver,
+  searchEnlisted,
 } from '@/app/actions';
 import {
   App,
@@ -24,10 +24,6 @@ import { debounce } from 'lodash';
 export default function UsePointFormPage() {
   const [form] = Form.useForm();
   const router = useRouter();
-  // const query = Form.useWatch('giverId', {
-  //   form,
-  //   preserve: true,
-  // });
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,7 +59,7 @@ export default function UsePointFormPage() {
 
   useEffect(() => {
     setSearching(true);
-    searchPointsReceiver(query).then((value) => {
+    searchEnlisted(query).then((value) => {
       setSearching(false);
       setOptions(value);
     });

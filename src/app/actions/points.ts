@@ -401,7 +401,7 @@ export async function redeemPoint({
   if (target == null) {
     return { message: '대상이 존재하지 않습니다' };
   }
-  if (!hasPermission(permissions, ['Admin', 'PointAdmin', 'UsePoint'])) {
+  if (!hasPermission(permissions, ['Admin', 'Commander'])) {
     return { message: '권한이 없습니다' };
   }
   try {
