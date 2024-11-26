@@ -19,6 +19,7 @@ export function PermissionsTransfer({
       blockNode
       selectable={false}
       checkable
+      checkStrictly={true}
       onCheck={(checked) => {
         onChange?.(checked as Permission[]);
       }}
