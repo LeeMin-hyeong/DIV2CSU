@@ -1,6 +1,6 @@
+import { Empty } from 'antd';
 import { listUnverifiedSoldiers } from '@/app/actions';
 import { UnverifiedUserCardList } from './components';
-import { Empty } from 'antd';
 
 export default async function ManageSignUpPage() {
   const { message, data } = await listUnverifiedSoldiers();
@@ -14,7 +14,6 @@ export default async function ManageSignUpPage() {
       </div>
     );
   }
-
   return (
     <UnverifiedUserCardList
       data={data}
