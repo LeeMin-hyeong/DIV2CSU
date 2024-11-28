@@ -38,19 +38,11 @@ import z from 'zod';
 
 export const Permission = z.enum([
   'Admin',
-  'Commander',
-  'UserAdmin',
-  'DeleteUser',
-  'VerifyUser',
-  'GivePermissionUser',
-  'ResetPasswordUser',
-  'PointAdmin',
-  'ViewPoint',
-  'GiveMeritPoint',
-  'GiveLargeMeritPoint',
-  'GiveDemeritPoint',
-  'GiveLargeDemeritPoint',
-  'UsePoint',
+    'Commander',
+      'UserAdmin',
+      'PointNco',
+      'Nco',
+    'Approver',
 ]);
 
 export const Permissions = z.object({
