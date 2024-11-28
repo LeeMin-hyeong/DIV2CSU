@@ -8,6 +8,7 @@ import { cache } from 'react';
 import { validateSoldier } from './auth';
 import { kysely } from './kysely';
 import { hasPermission } from './utils';
+import { TableExpression } from 'kysely';
 
 export async function unauthenticated_currentSoldier() {
   const accessToken = cookies().get('auth.access_token')?.value;
@@ -217,6 +218,37 @@ export async function searchNco(query: string) {
     .execute();
 }
 
+export async function searchCommander(query: string) {
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb('type', '=', 'nco'),
+        eb.or([
+          eb('sn', 'like', `%${query}%`),
+          eb('name', 'like', `%${query}%`),
+        ]),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
+        ]),
+        eb.exists(
+          eb
+            .selectFrom('permissions')
+            .whereRef('permissions.soldiers_id', '=', 'soldiers.sn')
+            .having('value', 'in', [
+              'Commander',
+              'Admin',
+            ])
+            .select('permissions.value')
+            .groupBy('permissions.value'),
+        ),
+      ]),
+    )
+    .select(['sn', 'name'])
+    .execute();
+}
+
 export async function deleteSoldier({
   sn,
   value,
@@ -248,4 +280,3 @@ export async function deleteSoldier({
     .executeTakeFirstOrThrow();
   return { message: null };
 }
-
