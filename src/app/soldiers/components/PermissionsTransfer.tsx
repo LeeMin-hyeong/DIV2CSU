@@ -20,8 +20,11 @@ export function PermissionsTransfer({
       selectable={false}
       checkable
       checkStrictly={true}
-      onCheck={(checked) => {
-        onChange?.(checked as Permission[]);
+      onCheck={(checkedInfo) => {
+        const checkedKeys = Array.isArray(checkedInfo)
+          ? checkedInfo
+          : checkedInfo.checked;
+        onChange?.(checkedKeys as Permission[]);
       }}
       treeData={[
         {
