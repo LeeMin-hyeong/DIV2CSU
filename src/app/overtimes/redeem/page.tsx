@@ -21,13 +21,7 @@ import 'dayjs/locale/ko';
 import { debounce } from 'lodash';
 import { redirect, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-
-export async function checkIfNco() {
-  const data = await currentSoldier();
-  if (data?.type === 'enlisted') {
-    redirect('/overtimes/request');
-  }
-}
+import { checkIfNco } from './actions';
 
 export default function UsePointFormPage() {
   const [form] = Form.useForm();
