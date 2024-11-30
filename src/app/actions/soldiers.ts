@@ -46,6 +46,7 @@ export const fetchSoldier = cache(async (sn: string) => {
       'soldiers.sn',
       'soldiers.name',
       'soldiers.type',
+      'soldiers.unit',
       'soldiers.verified_at',
       'soldiers.deleted_at',
       'soldiers.rejected_at',
@@ -61,6 +62,7 @@ export const fetchSoldier = cache(async (sn: string) => {
     sn:          data?.sn as string,
     name:        data?.name as string,
     type:        data?.type as ('nco' | 'enlisted'),
+    unit:        data?.unit as ('headquarters' | 'supply' | 'medical' | 'transport' | null),
     verified_at: data?.verified_at as Date,
     deleted_at:  data?.deleted_at as Date,
     rejected_at: data?.rejected_at as Date,
@@ -244,6 +246,37 @@ export async function searchCommander(query: string) {
             .groupBy('permissions.value'),
         ),
       ]),
+    )
+    .select(['sn', 'name'])
+    .execute();
+}
+
+export async function searchApprover(query: string = '') {
+  const current = await currentSoldier();
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb('type', '=', 'nco'),
+        eb('unit', '=', current.unit),
+        eb.or([
+          eb('sn', 'like', `%${query}%`),
+          eb('name', 'like', `%${query}%`),
+        ]),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
+        ]),
+        eb('deleted_at', 'is', null),
+        eb.exists(
+          eb
+            .selectFrom('permissions')
+            .whereRef('permissions.soldiers_id', '=', 'soldiers.sn')
+            .having('value', '=', 'Approver')
+            .select('permissions.value')
+            .groupBy('permissions.value')
+        ),
+      ])
     )
     .select(['sn', 'name'])
     .execute();

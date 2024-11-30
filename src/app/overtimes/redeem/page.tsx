@@ -3,6 +3,7 @@
 import {
   currentSoldier,
   fetchOvertimeSummary,
+  fetchSoldier,
   redeemOvertime,
   searchEnlisted,
 } from '@/app/actions';
@@ -24,7 +25,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'reac
 export async function checkIfNco() {
   const data = await currentSoldier();
   if (data?.type === 'enlisted') {
-    redirect('/points/request');
+    redirect('/overtimes/request');
   }
 }
 
@@ -37,6 +38,7 @@ export default function UsePointFormPage() {
   const [searching, setSearching] = useState(false);
   const [availableOvertimes, setAvailableOvertimes] = useState<number | null>();
   const { message } = App.useApp();
+  const [target, setTarget] = useState('')
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -60,13 +62,9 @@ export default function UsePointFormPage() {
     [],
   );
 
-  // const handleSearch = (value: string) => {
-  //   debouncedSearch(value);
-  // };
-
   useEffect(() => {
     setSearching(true);
-    searchEnlisted(query || '').then((value) => {
+    searchEnlisted(query).then((value) => {
       setSearching(false);
       setOptions(value);
     });
@@ -115,7 +113,7 @@ export default function UsePointFormPage() {
           />
         </Form.Item>
         <Form.Item<string>
-          label={'사용 대상자'}
+          label={'사용 대상자' + (target !== '' ? `: ${target}` : '')}
           name={'userId'}
           rules={[
             { required: true, message: '대상자를 입력해주세요' },
@@ -131,10 +129,9 @@ export default function UsePointFormPage() {
               label: renderPlaceholder(t),
             }))}
             onChange={async (value) => {
-              const { overtime, usedOvertime } = await fetchOvertimeSummary(
-                value,
-              );
+              const { overtime, usedOvertime } = await fetchOvertimeSummary(value);
               setAvailableOvertimes(Math.floor((overtime - usedOvertime*1440)/1440));
+              await fetchSoldier(value).then((soldier) => setTarget(soldier.name))
             }}
             onSearch={debouncedSearch}
           >

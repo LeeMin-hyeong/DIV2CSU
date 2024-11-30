@@ -11,6 +11,7 @@ import {
   UsedPointsHorizontalList,
   OvertimeApproveList,
 } from './components';
+import { redirect } from 'next/navigation';
 
 async function EnlistedPage({ user, page }: { user: Soldier; page: number }) {
   const { data, count, usedOvertimes } = await listOvertimes(user?.sn, page);
@@ -53,10 +54,12 @@ async function NcoPage({
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
+            <p className='font-bold px-2 py-2'> 초과근무 지시자 승인 </p>
             <OvertimeRequestList />
             <Divider />
           </>
         )}
+        <p className='font-bold px-2 pb-2'> 초과근무 지시자 승인 기록 </p>
         <OvertimeHistoryList
           type={user.type}
           data={data}
@@ -76,7 +79,7 @@ async function NcoPage({
   );
 }
 
-async function CommanderPage({
+async function ApproverPage({
   user,
   page,
   showRequest,
@@ -92,16 +95,19 @@ async function CommanderPage({
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
+            <p className='font-bold px-2 py-2'> 초과근무 확인관 승인 </p>
             <OvertimeApproveList />
             <Divider />
           </>
         )}
         {showRequest && (
           <>
+            <p className='font-bold px-2 pb-2'> 초과근무 지시자 승인 </p>
             <OvertimeRequestList />
             <Divider />
           </>
         )}
+        <p className='font-bold px-2 pb-2'> 초과근무 지시자 승인 기록 </p>
         <OvertimeHistoryList
           type={user.type}
           data={data}
@@ -132,6 +138,9 @@ export default async function ManagePointsPage({
   ]);
   const page = parseInt(searchParams?.page ?? '1', 10) || 1;
 
+  if(searchParams.sn && !hasPermission(profile.permissions, ['Admin', 'Approver'])){
+    redirect('/overtimes')
+  }
   if (user.type === 'enlisted') {
     return (
       <EnlistedPage
@@ -140,9 +149,9 @@ export default async function ManagePointsPage({
       />
     );
   }
-  if (hasPermission(profile.permissions, ['Admin', 'Commander'])){
+  if (hasPermission(profile.permissions, ['Approver'])){
     return (
-      <CommanderPage
+      <ApproverPage
         user={user as any}
         page={page}
         showRequest={profile.sn === user.sn}

@@ -2,6 +2,7 @@
 
 import {
   fetchPointSummary,
+  fetchSoldier,
   redeemPoint,
   searchEnlisted,
 } from '@/app/actions';
@@ -30,6 +31,7 @@ export default function UsePointFormPage() {
   const [searching, setSearching] = useState(false);
   const [availablePoints, setAvailablePoints] = useState<number | null>();
   const { message } = App.useApp();
+  const [target, setTarget] = useState('')
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -107,7 +109,7 @@ export default function UsePointFormPage() {
           />
         </Form.Item>
         <Form.Item<string>
-          label={'사용 대상자'}
+          label={'사용 대상자' + (target !== '' ? `: ${target}` : '')}
           name={'userId'}
           rules={[
             { required: true, message: '수령자를 입력해주세요' },
@@ -127,6 +129,7 @@ export default function UsePointFormPage() {
                 value,
               );
               setAvailablePoints(merit - usedMerit + demerit);
+              await fetchSoldier(value).then((soldier) => setTarget(soldier.name))
             }}
             onSearch={handleSearch}
           >
@@ -137,7 +140,7 @@ export default function UsePointFormPage() {
           name='value'
           rules={[{ required: true, message: '상벌점을 입력해주세요' }]}
         >
-          <InputNumber
+          <InputNumber<number>
             min={1}
             controls
             addonAfter={
@@ -145,6 +148,20 @@ export default function UsePointFormPage() {
             }
             type='number'
             inputMode='numeric'
+            onChange={(value) => {
+              if(value != null && value == 16){
+                form.setFieldValue('reason', '외출 사용')
+              }
+              else if(value != null &&value == 32){
+                form.setFieldValue('reason', '외박 사용')
+              }
+              else if(value != null &&value % 48 == 0){
+                form.setFieldValue('reason', `휴가 ${Math.floor(value/48)}일 사용`)
+              }
+              else{
+                form.setFieldValue('reason', null)
+              }
+            }}
           />
         </Form.Item>
         <Form.Item<string>

@@ -2,6 +2,7 @@
 
 import {
   createPoint,
+  fetchSoldier,
   searchEnlisted,
   searchNco,
 } from '@/app/actions';
@@ -35,6 +36,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
+  const [target, setTarget] = useState('')
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -135,7 +137,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           />
         </Form.Item>
         <Form.Item<string>
-          label={type === 'request' ? '수여자' : '수령자'}
+          label={(type === 'request' ? '수여자' : '수령자') + (target !== '' ? `: ${target}` : '')}
           name={type === 'request' ? 'giverId' : 'receiverId'}
           rules={[
             { required: true, message: `${type === 'request' ? '수여자' : '수령자'}를 입력해주세요` },
@@ -148,6 +150,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onChange={async (value) => await fetchSoldier(value).then((soldier) => setTarget(soldier.name))}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

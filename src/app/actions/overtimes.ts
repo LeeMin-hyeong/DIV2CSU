@@ -168,15 +168,6 @@ export async function verifyOvertime(
   if (!value && rejectReason == null) {
     return { message: '반려 사유를 입력해주세요' };
   }
-  if (value) {
-    const { message } = checkIfSoldierHasPermission(
-      overtime.value,
-      current.permissions,
-    );
-    if (message) {
-      return { message };
-    }
-  }
   try {
     await kysely
       .updateTable('overtimes')
@@ -213,15 +204,6 @@ export async function approveOvertime(
   }
   if (!value && disapprovedReason == null) {
     return { message: '반려 사유를 입력해주세요' };
-  }
-  if (value) {
-    const { message } = checkIfSoldierHasPermission(
-      overtime.value,
-      current.permissions,
-    );
-    if (message) {
-      return { message };
-    }
   }
   try {
     await kysely

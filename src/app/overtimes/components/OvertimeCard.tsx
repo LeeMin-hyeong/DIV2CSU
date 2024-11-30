@@ -98,7 +98,7 @@ export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
             </p>
             <p>{overtime?.reason}</p>
           </div>
-          {overtime?.approved_at ? null : (
+          {overtime?.verified_at || overtime?.approved_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'

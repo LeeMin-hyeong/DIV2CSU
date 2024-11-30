@@ -2,12 +2,15 @@
 
 import {
   createOvertime,
+  fetchSoldier,
+  searchApprover,
   searchNco,
 } from '@/app/actions';
 import {
   App,
   AutoComplete,
   Button,
+  Card,
   DatePicker,
   Divider,
   Form,
@@ -35,6 +38,8 @@ export function ManageOvertimeForm() {
   const [endDate, setEndDate] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [overtimeDuration, setOvertimeDuration] = useState('');
+  const [giverName, setGiverName] = useState('');
+  const [approverName, setApproverName] = useState('');
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -61,7 +66,7 @@ export function ManageOvertimeForm() {
 
   useEffect(() => {
     setSearching(true);
-    searchNco(approverQuery || '').then((value) => {
+    searchApprover(approverQuery).then((value) => {
       setSearching(false);
       setApproverOptions(value);
     });
@@ -119,6 +124,15 @@ export function ManageOvertimeForm() {
     },
     [router, form, message],
   );
+
+  useEffect(() => {
+    searchApprover().then((value) => {
+      if (value.length === 1) {
+        form.setFieldsValue({ approverId: value[0].sn }); // 필드에 군번 자동 입력
+        setApproverName(value[0].name)
+      }
+    });
+  }, [form]);
 
   return (
     <div className='px-4'>
@@ -188,12 +202,12 @@ export function ManageOvertimeForm() {
               />
           </Form.Item>
         </div>
-        <div className='mx-2' id='print_overtime'>
+        <Card className='mx-2 font-bold' id='print_overtime' size='small'>
           초과근무 {overtimeDuration}
-        </div>
+        </Card>
         <Divider />
         <Form.Item<string>
-          label='지시자'
+          label={giverName !== '' ? `지시자 : ${giverName}` : '지시자'}
           name='giverId'
           rules={[
             { required: true, message: '지시자를 입력해주세요' },
@@ -206,12 +220,13 @@ export function ManageOvertimeForm() {
               label: renderPlaceholder(t),
             }))}
             onSearch={debouncedSearch.soldier}
+            onChange={async (value) => {await fetchSoldier(value).then((soldier) => {setGiverName(soldier.name)})}}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
         </Form.Item>
         <Form.Item<string>
-          label='확인관'
+          label={approverName !== '' ? `확인관 : ${approverName}` : '확인관'}
           name='approverId'
           rules={[
             { required: true, message: '확인관을 입력해주세요' },
@@ -224,6 +239,7 @@ export function ManageOvertimeForm() {
               label: renderPlaceholder(t),
             }))}
             onSearch={debouncedSearch.approver}
+            onChange={async (value) => {await fetchSoldier(value).then((soldier) => {setApproverName(soldier.name)})}}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

@@ -40,7 +40,6 @@ export const Permission = z.enum([
   'Admin',
     'Commander',
       'UserAdmin',
-      'PointNco',
       'Nco',
     'Approver',
 ]);

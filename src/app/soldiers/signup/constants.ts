@@ -20,10 +20,6 @@ export const ALL_PERMISSIONS: {
     key: 'UserAdmin',
     title: '인사담당관',
   },
-  PointNco: {
-    key: 'PointNco',
-    title: '상벌점 5점 이상 부여',
-  },
   Nco: {
     key: 'Nco',
     title: '상벌점 부여',
