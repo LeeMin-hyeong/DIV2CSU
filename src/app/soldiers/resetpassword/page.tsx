@@ -1,6 +1,6 @@
 'use client';
 
-import { QuestionOutlined } from '@ant-design/icons';
+import { LoadingOutlined, QuestionOutlined } from '@ant-design/icons';
 import { Card, FloatButton, Spin } from 'antd';
 import { useState, useEffect } from 'react';
 import { HelpModal, PasswordForm } from '../components';
@@ -18,7 +18,11 @@ export default function ResetPasswordPage() {
   }, []);
 
   if (!sn) {
-    return <Spin fullscreen/>
+    return (
+      <div className='flex flex-1 min-h-full justify-center items-center'>
+        <Spin indicator={<LoadingOutlined spin />} />
+      </div>
+    );
   }
 
   return (

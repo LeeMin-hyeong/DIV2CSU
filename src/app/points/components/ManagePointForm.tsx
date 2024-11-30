@@ -150,7 +150,15 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
-            onChange={async (value:string) => await fetchSoldier(value).then((soldier) => setTarget(soldier.name))}
+            onChange={(value) => {
+              const selectedOption = options.find((t) => t.sn === value);
+              if (selectedOption) {
+                setTarget(selectedOption.name); // 선택된 sn에 대응하는 name 설정
+              }
+              else {
+                setTarget('')
+              }
+            }}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

@@ -271,7 +271,7 @@ export async function createOvertime({
   if (reason.trim() === '') {
     return { message: '초과근무 내용을 작성해주세요' };
   }
-  const { type, sn, permissions } = await currentSoldier();
+  const { sn: sn } = await currentSoldier();
   if (giverId == null) {
     return { message: '지시자를 입력해주세요' };
   }
@@ -282,6 +282,9 @@ export async function createOvertime({
   const approver = await fetchSoldier(approverId!);
   if (approver.sn == null) {
     return { message: '확인관이 존재하지 않습니다' }
+  }
+  if (!hasPermission(approver.permissions, ['Approver'])) {
+    return { message: '확인관의 직책이 행정보급관이 아닙니다' }
   }
   if (giverId === sn) {
     return { message: '스스로에게 수여할 수 없습니다' };

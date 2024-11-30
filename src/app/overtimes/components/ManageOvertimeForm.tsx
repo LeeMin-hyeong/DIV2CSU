@@ -220,7 +220,15 @@ export function ManageOvertimeForm() {
               label: renderPlaceholder(t),
             }))}
             onSearch={debouncedSearch.soldier}
-            onChange={async (value: string) => {await fetchSoldier(value).then((soldier) => {setGiverName(soldier.name)})}}
+            onChange={(value) => {
+              const selectedOption = soldierOptions.find((t) => t.sn === value);
+              if (selectedOption) {
+                setGiverName(selectedOption.name);
+              }
+              else {
+                setGiverName('')
+              }
+            }}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
@@ -239,7 +247,15 @@ export function ManageOvertimeForm() {
               label: renderPlaceholder(t),
             }))}
             onSearch={debouncedSearch.approver}
-            onChange={async (value: string) => {await fetchSoldier(value).then((soldier) => {setApproverName(soldier.name)})}}
+            onChange={(value) => {
+              const selectedOption = approverOptions.find((t) => t.sn === value);
+              if (selectedOption) {
+                setGiverName(selectedOption.name);
+              }
+              else {
+                setGiverName('')
+              }
+            }}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
