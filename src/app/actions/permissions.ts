@@ -17,13 +17,13 @@ export async function updatePermissions({
     return { message: '본인 정보는 수정할 수 없습니다' };
   }
   const target = await fetchSoldier(sn);
-  if (target.permissions.includes('Admin')) {
+  if (hasPermission(target.permissions, ['Admin'])) {
     return { message: '관리자는 수정할 수 없습니다' };
   }
   if (!hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
     return { message: '권한 수정 권한이 없습니다' };
   }
-  if (permissions.includes('Admin')) {
+  if (hasPermission(permissions, ['Admin'])) {
     return { message: '관리자 권한은 추가할 수 없습니다' };
   }
   if (!validatePermission(permissions)) {
