@@ -250,10 +250,10 @@ export function ManageOvertimeForm() {
             onChange={(value) => {
               const selectedOption = approverOptions.find((t) => t.sn === value);
               if (selectedOption) {
-                setGiverName(selectedOption.name);
+                setApproverName(selectedOption.name);
               }
               else {
-                setGiverName('')
+                setApproverName('')
               }
             }}
           >
