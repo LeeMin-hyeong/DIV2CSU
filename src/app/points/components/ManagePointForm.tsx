@@ -150,7 +150,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
-            onChange={async (value) => await fetchSoldier(value).then((soldier) => setTarget(soldier.name))}
+            onChange={async (value:string) => await fetchSoldier(value).then((soldier) => setTarget(soldier.name))}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

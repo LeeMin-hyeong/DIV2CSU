@@ -37,14 +37,8 @@ export function PermissionsTransfer({
                   key: 'UserAdmin',
                 },
                 {
-                  ...ALL_PERMISSIONS.PointNco,
-                  key: 'PointNco',
-                  children: [
-                    {
-                      ...ALL_PERMISSIONS.Nco,
-                      key: 'Nco',
-                    },
-                  ]
+                  ...ALL_PERMISSIONS.Nco,
+                  key: 'Nco',
                 },
               ],
             },

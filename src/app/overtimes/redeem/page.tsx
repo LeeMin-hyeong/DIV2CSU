@@ -128,7 +128,7 @@ export default function UsePointFormPage() {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
-            onChange={async (value) => {
+            onChange={async (value: string) => {
               const { overtime, usedOvertime } = await fetchOvertimeSummary(value);
               setAvailableOvertimes(Math.floor((overtime - usedOvertime*1440)/1440));
               await fetchSoldier(value).then((soldier) => setTarget(soldier.name))

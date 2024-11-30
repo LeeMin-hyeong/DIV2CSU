@@ -124,7 +124,7 @@ export default function UsePointFormPage() {
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
-            onChange={async (value) => {
+            onChange={async (value: string) => {
               const { merit, usedMerit, demerit } = await fetchPointSummary(
                 value,
               );
