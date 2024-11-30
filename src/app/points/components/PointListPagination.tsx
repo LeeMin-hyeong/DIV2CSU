@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 
 export type PointListPaginationProps = {
-  sn: string;
+  sn:    string;
   total: number;
   page?: number;
 };

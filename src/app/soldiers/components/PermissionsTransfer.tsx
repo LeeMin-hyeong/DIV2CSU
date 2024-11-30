@@ -19,6 +19,7 @@ export function PermissionsTransfer({
       blockNode
       selectable={false}
       checkable
+      checkStrictly={true}
       onCheck={(checked) => {
         onChange?.(checked as Permission[]);
       }}
@@ -28,17 +29,29 @@ export function PermissionsTransfer({
           key: 'Admin',
           children: [
             {
-              ...ALL_PERMISSIONS.UserAdmin,
-              children: Object.values(ALL_PERMISSIONS).filter(({ key }) =>
-                key.endsWith('User'),
-              ),
+              ...ALL_PERMISSIONS.Commander,
+              key: 'Commander',
+              children: [
+                {
+                  ...ALL_PERMISSIONS.UserAdmin,
+                  key: 'UserAdmin',
+                },
+                {
+                  ...ALL_PERMISSIONS.PointNco,
+                  key: 'PointNco',
+                  children: [
+                    {
+                      ...ALL_PERMISSIONS.Nco,
+                      key: 'Nco',
+                    },
+                  ]
+                },
+              ],
             },
             {
-              ...ALL_PERMISSIONS.PointAdmin,
-              children: Object.values(ALL_PERMISSIONS).filter(({ key }) =>
-                key.endsWith('Point'),
-              ),
-            },
+              ...ALL_PERMISSIONS.Approver,
+              key: 'Approver',
+            }
           ],
         },
       ]}

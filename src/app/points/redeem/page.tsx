@@ -3,7 +3,7 @@
 import {
   fetchPointSummary,
   redeemPoint,
-  searchPointsReceiver,
+  searchEnlisted,
 } from '@/app/actions';
 import {
   App,
@@ -17,16 +17,14 @@ import {
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { checkIfNco } from '../give/actions';
+import { debounce } from 'lodash';
 
 export default function UsePointFormPage() {
   const [form] = Form.useForm();
   const router = useRouter();
-  const query = Form.useWatch('giverId', {
-    form,
-    preserve: true,
-  });
+  const [query, setQuery] = useState('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -47,11 +45,23 @@ export default function UsePointFormPage() {
     checkIfNco();
   }, []);
 
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setQuery(value);
+      }, 300),
+    [],
+  );
+
+  const handleSearch = (value: string) => {
+    debouncedSearch(value);
+  };
+
   useEffect(() => {
     setSearching(true);
-    searchPointsReceiver(query || '').then((value) => {
+    searchEnlisted(query).then((value) => {
       setSearching(false);
-      setOptions(value as any);
+      setOptions(value);
     });
   }, [query]);
 
@@ -118,6 +128,7 @@ export default function UsePointFormPage() {
               );
               setAvailablePoints(merit - usedMerit + demerit);
             }}
+            onSearch={handleSearch}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

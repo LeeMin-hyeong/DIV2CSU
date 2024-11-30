@@ -82,21 +82,19 @@ export async function signIn({
     };
   }
   await validateSoldier(data);
-  const salt = data.password.slice(0, 32);
+  const salt           = data.password.slice(0, 32);
   const hashedPassword = data.password.slice(32);
-  const hashed = pbkdf2Sync(password, salt, 104906, 64, 'sha256').toString(
-    'base64',
-  );
+  const hashed         = pbkdf2Sync(password, salt, 104906, 64, 'sha256').toString('base64');
   if (hashedPassword !== hashed) {
     return {
-      message: '잘못된 비밀번호 입니다',
+      message:     '잘못된 비밀번호 입니다',
       accessToken: null,
     };
   }
   const accessToken = jwt.sign(
     {
       name: data.name,
-      sub: sn,
+      sub:  sn,
       type: data.type,
     },
     process.env.JWT_SECRET_KEY!,
@@ -106,19 +104,25 @@ export async function signIn({
     },
   );
   cookies().set('auth.access_token', accessToken, {
-    maxAge: 60 * 60,
+    maxAge:   60 * 60,
+    path:     '/',
     httpOnly: true,
-    path: '/',
   });
   revalidatePath('/', 'layout');
+  // 비밀번호가 초기화되어 자신의 군번과 동일한 경우
+  // 비밀번호 변경 창으로 연결
+  if(password == sn){
+    redirect('/soldiers/resetpassword')
+  }
   redirect('/');
 }
 
 const SignUpParams = Soldier.pick({
-  sn: true,
+  sn:       true,
   password: true,
-  type: true,
-  name: true,
+  unit:     true,
+  type:     true,
+  name:     true,
 });
 
 export async function signUp(
@@ -140,11 +144,12 @@ export async function signUp(
     await kysely
       .insertInto('soldiers')
       .values({
-        name: form.name,
-        sn: form.sn,
-        type: form.type,
+        name:     form.name,
+        sn:       form.sn,
+        type:     form.type,
+        unit:     form.unit,
         password: salt + hashed,
-      })
+      } as any)
       .executeTakeFirstOrThrow();
   } catch (e) {
     if ((e as { code: string }).code === '23505') {
@@ -155,18 +160,16 @@ export async function signUp(
   if (form.type === 'nco') {
     await kysely
       .insertInto('permissions')
-      .values(
-        ['GiveMeritPoint', 'GiveDemeritPoint'].map((p) => ({
+      .values({
           soldiers_id: form.sn,
-          value: p,
-        })),
-      )
+          value:       'Nco',
+        } as any)
       .executeTakeFirst();
   }
   const accessToken = jwt.sign(
     {
       name: form.name,
-      sub: form.sn,
+      sub:  form.sn,
       type: form.type,
     },
     process.env.JWT_SECRET_KEY!,
@@ -176,8 +179,8 @@ export async function signUp(
     },
   );
   cookies().set('auth.access_token', accessToken, {
-    maxAge: 60 * 60,
-    path: '/',
+    maxAge:   60 * 60,
+    path:     '/',
     httpOnly: true,
   });
   redirect('/auth/needVerification');
@@ -189,9 +192,9 @@ export async function resetPassword({
   newPassword,
   confirmation,
 }: {
-  sn: string;
-  oldPassword: string;
-  newPassword: string;
+  sn:           string;
+  oldPassword:  string;
+  newPassword:  string;
   confirmation: string;
 }) {
   const { sn: requestingSoldierSN } = await currentSoldier();
@@ -210,50 +213,38 @@ export async function resetPassword({
     .select('password')
     .executeTakeFirstOrThrow();
 
-  const oldSalt = data.password.slice(0, 32);
+  const oldSalt           = data.password.slice(0, 32);
   const oldHashedPassword = data.password.slice(32);
-  const oldHashed = pbkdf2Sync(
-    oldPassword,
-    oldSalt,
-    104906,
-    64,
-    'sha256',
-  ).toString('base64');
+  const oldHashed         = pbkdf2Sync(oldPassword, oldSalt, 104906, 64, 'sha256').toString('base64');
   if (oldHashedPassword !== oldHashed) {
     return { message: '잘못된 비밀번호 입니다' };
   }
 
   const salt = randomBytes(24).toString('base64');
-  const hashed = pbkdf2Sync(
-    newPassword as string,
-    salt,
-    104906,
-    64,
-    'sha256',
-  ).toString('base64');
+  const hashed = pbkdf2Sync(newPassword as string, salt, 104906, 64, 'sha256').toString('base64');
 
-  await kysely
-    .updateTable('soldiers')
-    .where('sn', '=', sn)
-    .set({ password: salt + hashed })
-    .executeTakeFirstOrThrow();
+  try {
+    await kysely
+      .updateTable('soldiers')
+      .where('sn', '=', sn)
+      .set({ password: salt + hashed })
+      .executeTakeFirstOrThrow();
+    return { message: null };
+  } catch (e) {
+    return { message: '비밀번호 초기화에 실패했습니다' };
+  }
 }
 
 export async function resetPasswordForce(sn: string) {
   const current = await currentSoldier();
-  if (
-    !hasPermission(
-      ['Admin', 'UserAdmin', 'ResetPasswordUser'],
-      current.permissions,
-    )
-  ) {
+  if (!hasPermission(['Admin', 'Commander', 'UserAdmin'], current.permissions,)) {
     return { message: '비밀번호 초기화 권한이 없습니다', password: null };
   }
   if (current.sn === sn) {
     return { message: '본인 비밀번호는 초기화 할 수 없습니다', password: null };
   }
-  // 랜덤 비밀번호 생성
-  const password = randomBytes(6).toString('hex');
+  // 사용자 군번으로 비밀번호 초기화
+  const password = sn;
   const salt = randomBytes(24).toString('base64');
   const hashed = pbkdf2Sync(password, salt, 104906, 64, 'sha256').toString(
     'base64',
@@ -264,7 +255,6 @@ export async function resetPasswordForce(sn: string) {
       .where('sn', '=', sn)
       .set({ password: salt + hashed })
       .executeTakeFirstOrThrow();
-      console.log('새 비밀번호:', password);
     return { password, message: null };
   } catch (e) {
     return { password: null, message: '비밀번호 초기화에 실패했습니다' };
