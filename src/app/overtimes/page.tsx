@@ -1,37 +1,38 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { Divider, FloatButton } from 'antd';
-import { currentSoldier, fetchSoldier, hasPermission, listPoints } from '../actions';
+import { currentSoldier, fetchSoldier, listOvertimes} from '../actions';
+import { hasPermission } from '../actions/utils';
 import {
-  PointListPagination,
-  PointRequestList,
-  PointApproveList,
-  PointsHistoryList,
-  TotalPointBox,
+  OvertimeListPagination,
+  OvertimeRequestList,
+  OvertimeHistoryList,
+  TotalOvertimeBox,
   UsedPointsHorizontalList,
+  OvertimeApproveList,
 } from './components';
 import { redirect } from 'next/navigation';
 
 async function EnlistedPage({ user, page }: { user: Soldier; page: number }) {
-  const { data, count, usedPoints } = await listPoints(user?.sn, page);
+  const { data, count, usedOvertimes } = await listOvertimes(user?.sn, page);
   return (
     <div className='flex flex-1 flex-col'>
-      <TotalPointBox user={user} />
+      <TotalOvertimeBox user={user} />
       <div className='flex-1 mb-2'>
-        <UsedPointsHorizontalList data={usedPoints} />
-        <PointsHistoryList
+        <UsedPointsHorizontalList data={usedOvertimes as any} />
+        <OvertimeHistoryList
           type={user.type}
           data={data}
         />
       </div>
-      <PointListPagination
+      <OvertimeListPagination
         sn={user.sn}
         total={count}
         page={page}
       />
       <FloatButton
         icon={<PlusOutlined />}
-        href='/points/request'
+        href='/overtimes/request'
       />
     </div>
   );
@@ -46,39 +47,39 @@ async function NcoPage({
   page: number;
   showRequest: boolean;
 }) {
-  const { data, count } = await listPoints(user?.sn, page);
+  const { data, count } = await listOvertimes(user?.sn, page);
 
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
-            <p className='font-bold px-2 py-2'> 상벌점 요청 </p>
-            <PointRequestList />
+            <p className='font-bold px-2 py-2'> 초과근무 지시자 승인 </p>
+            <OvertimeRequestList />
             <Divider />
           </>
         )}
-        <p className='font-bold px-2 pb-2'> 상벌점 부여 기록 </p>
-        <PointsHistoryList
+        <p className='font-bold px-2 pb-2'> 초과근무 지시자 승인 기록 </p>
+        <OvertimeHistoryList
           type={user.type}
           data={data}
         />
       </div>
       <Divider />
-      <PointListPagination
+      <OvertimeListPagination
         sn={user.sn}
         total={count}
         page={page}
       />
-      <FloatButton
+      {/* <FloatButton
         icon={<PlusOutlined />}
         href='/points/give'
-      />
+      /> */}
     </div>
   );
 }
 
-async function CommanderPage({
+async function ApproverPage({
   user,
   page,
   showRequest,
@@ -87,38 +88,41 @@ async function CommanderPage({
   page: number;
   showRequest: boolean;
 }) {
-  const { data, count } = await listPoints(user?.sn, page);
+  const { data, count } = await listOvertimes(user?.sn, page);
 
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
-            <PointApproveList />
+            <p className='font-bold px-2 py-2'> 초과근무 확인관 승인 </p>
+            <OvertimeApproveList />
             <Divider />
           </>
         )}
         {showRequest && (
           <>
-            <PointRequestList />
+            <p className='font-bold px-2 pb-2'> 초과근무 지시자 승인 </p>
+            <OvertimeRequestList />
             <Divider />
           </>
         )}
-        <PointsHistoryList
+        <p className='font-bold px-2 pb-2'> 초과근무 지시자 승인 기록 </p>
+        <OvertimeHistoryList
           type={user.type}
           data={data}
         />
       </div>
       <Divider />
-      <PointListPagination
+      <OvertimeListPagination
         sn={user.sn}
         total={count}
         page={page}
       />
-      <FloatButton
+      {/* <FloatButton
         icon={<PlusOutlined />}
         href='/points/give'
-      />
+      /> */}
     </div>
   )
 }
@@ -134,8 +138,8 @@ export default async function ManagePointsPage({
   ]);
   const page = parseInt(searchParams?.page ?? '1', 10) || 1;
 
-  if(searchParams.sn && !hasPermission(profile.permissions, ['Admin', 'Commander'])){
-    redirect('/points')
+  if(searchParams.sn && !hasPermission(profile.permissions, ['Admin', 'Approver'])){
+    redirect('/overtimes')
   }
   if (user.type === 'enlisted') {
     return (
@@ -145,9 +149,9 @@ export default async function ManagePointsPage({
       />
     );
   }
-  if (hasPermission(profile.permissions, ['Admin', 'Commander'])){
+  if (hasPermission(profile.permissions, ['Approver'])){
     return (
-      <CommanderPage
+      <ApproverPage
         user={user as any}
         page={page}
         showRequest={profile.sn === user.sn}
