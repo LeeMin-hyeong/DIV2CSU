@@ -16,9 +16,9 @@ export default async function Home() {
   const user = await currentSoldier();
 
   if(user.type == 'nco'){
-    const {verified, pending, rejected} = await fetchPointsCountsNco();
     const needVerify = await fetchUnverifiedSoldiersCount()
     const { needApprove, pending:pendingOvertimes, rejected: rejectedOvertimes } = await fetchOvertimesCountsNco();
+    const {approved, pending, needApprove, rejected} = await fetchPointsCountsNco();
     return (
       <div>
         {hasPermission(user.permissions, ['Admin', 'Commander', 'UserAdmin']) ?
@@ -33,14 +33,17 @@ export default async function Home() {
           </Link>
           <Divider/>
         </div> : null}
+        <p className='font-bold px-2 py-2'>상점 요청 요약</p>
         <Link href={`/points`}>
-          <Card className='my-1 mx-1' size='small'>
-            <div className='flex flex-row items-center justify-between'>
-              <p className='font-bold'> 승인한 상벌점 요청 </p>
-              <p className='font-bold'> { verified } 건 </p>
-            </div>
-          </Card>
-          <Card className='my-1 mx-1' size='small'>
+          {hasPermission(user.permissions, ['Admin', 'Commander']) ? 
+            <Card className='my-1 mx-1'>
+              <div className='flex flex-row items-center justify-between'>
+                <p className='font-bold'> 최종 승인 대기중인 상벌점 요청 </p>
+                <p className='font-bold'> { needApprove } 건 </p>
+              </div>
+            </Card>
+          : null}
+          <Card className='my-1 mx-1'>
             <div className='flex flex-row items-center justify-between'>
               <p className='font-bold'> 승인 대기중인 상벌점 요청 </p>
               <p className='font-bold'> { pending } 건 </p>
@@ -78,25 +81,31 @@ export default async function Home() {
       </div>
     );
   } else {
-    const { verified:_, pending: pendingPoints, rejected: rejectedPoints } = await fetchPointsCountsEnlisted();
+    const {approved, pending, needApprove, rejected} = await fetchPointsCountsEnlisted();
     const { needApprove, pending:pendingOvertimes, rejected: rejectedOvertimes } = await fetchOvertimesCountsEnlisted();
     return (
       <div>
         <Link href={`/points`}>
-          <TotalPointBox user={user as any}/>
-          <Card className='my-1 mx-1' size='small'>
-            <div className='flex flex-row items-center justify-between'>
-              <p className='font-bold'> 승인 대기중인 상벌점 요청 </p>
-              <p className='font-bold'> { pendingPoints } 건 </p>
-            </div>
-          </Card>
-          <Card className='my-1 mx-1' size='small'>
-            <div className='flex flex-row items-center justify-between'>
-              <p className='font-bold'> 반려된 상벌점 요청 </p>
-              <p className='font-bold'> { rejectedPoints } 건 </p>
-            </div>
-          </Card>
-        </Link>
+        <TotalPointBox user={user as any}/>
+        <Card className='my-1 mx-1'>
+          <div className='flex flex-row items-center justify-between'>
+            <p className='font-bold'> 지휘관 승인 대기중인 상벌점 요청 </p>
+            <p className='font-bold'> { needApprove } 건 </p>
+          </div>
+        </Card>
+        <Card className='my-1 mx-1'>
+          <div className='flex flex-row items-center justify-between'>
+            <p className='font-bold'> 수여자 승인 대기중인 상벌점 요청 </p>
+            <p className='font-bold'> { pending } 건 </p>
+          </div>
+        </Card>
+        <Card className='my-1 mx-1'>
+          <div className='flex flex-row items-center justify-between'>
+            <p className='font-bold'> 반려된 상벌점 요청 </p>
+            <p className='font-bold'> { rejected } 건 </p>
+          </div>
+        </Card>
+      </Link>
         <Divider />
         <Link href={'/overtimes'}>
           <TotalOvertimeBox user={user as any}/>

@@ -5,6 +5,7 @@ import {
   fetchSoldier,
   searchEnlisted,
   searchNco,
+  searchCommander,
 } from '@/app/actions';
 import {
   App,
@@ -31,8 +32,10 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [soldierQuery, setSoldierQuery] = useState('');
+  const [commanderQuery, setCommanderQuery] = useState('');
+  const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [commanderOptions, setCommanderOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
@@ -54,28 +57,30 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     }
   }, [type]);
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((value: string) => {
-        setQuery(value);
-      }, 300),
-    [],
-  );
-
-  const handleSearch = (value: string) => {
-    debouncedSearch(value);
-  };
+  const debouncedSearch = useMemo(() => ({
+    soldier: debounce((value) => setSoldierQuery(value), 300),
+    commander: debounce((value) => setCommanderQuery(value), 300),
+  }), []);
 
   useEffect(() => {
     setSearching(true);
     const searchFn =
       type === 'request' ? searchNco : searchEnlisted;
 
-    searchFn(query).then((value) => {
+    searchFn(soldierQuery).then((value) => {
       setSearching(false);
-      setOptions(value);
+      setSoldierOptions(value);
     });
-  }, [query, type]);
+  }, [soldierQuery, type]);
+
+  useEffect(() => {
+    setSearching(true);
+    searchCommander(commanderQuery || '').then((value) => {
+      setSearching(false);
+      setCommanderOptions(value as any);
+    });
+
+  }, [commanderQuery]);
 
   const handleSubmit = useCallback(
     async (newForm: any) => {
@@ -145,8 +150,25 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           ]}
         >
           <AutoComplete
-            onSearch={handleSearch} // Debounced search handler
-            options={options.map((t) => ({
+            options={soldierOptions.map((t) => ({
+              value: t.sn,
+              label: renderPlaceholder(t),
+            }))}
+            onSearch={debouncedSearch.soldier}
+          >
+            <Input.Search loading={searching} />
+          </AutoComplete>
+        </Form.Item>
+        <Form.Item<string>
+          label='승인자'
+          name='commanderId'
+          rules={[
+            { required: true, message: '승인자를 입력해주세요' },
+            { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
+          ]}
+        >
+          <AutoComplete
+            options={commanderOptions.map((t) => ({
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
@@ -159,6 +181,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
                 setTarget('')
               }
             }}
+            onSearch={debouncedSearch.commander}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
