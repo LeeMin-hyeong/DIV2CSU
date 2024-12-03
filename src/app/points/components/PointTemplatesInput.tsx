@@ -33,8 +33,7 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
                   <span className='flex-1 inline-block whitespace-normal'>{row.reason}</span>
                   {row.merit && (
                     <Button
-                      onClick={(e) => {
-                        e.stopPropagation(); // Click event propagation
+                      onClick={() => {
                         onChange?.(row.reason, row.merit);
                       }}
                       type='primary'
@@ -45,8 +44,7 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
                   {row.demerit && (
                     <Button
                       className='ml-2'
-                      onClick={(e) => {
-                        e.stopPropagation(); // Click event propagation
+                      onClick={() => {
                         onChange?.(row.reason, row.demerit);
                       }}
                       type='primary'
@@ -59,9 +57,38 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
                 </div>
               ),
             })),
-        })),
+        }))
       );
     });
+
+    // 키보드 열림/닫힘 시 스크롤 고정 처리
+    const handleKeyboardVisibility = () => {
+      // 키보드가 열린 경우
+      if (document.activeElement instanceof HTMLInputElement) {
+        document.body.style.overflow = 'hidden'; // 스크롤 고정
+      } else {
+        document.body.style.overflow = ''; // 스크롤 해제
+      }
+    };
+
+    // Resize 이벤트 감지
+    window.addEventListener('resize', handleKeyboardVisibility);
+
+    // Focus/Blur 이벤트 감지
+    const inputElements = document.querySelectorAll('input, textarea');
+    inputElements.forEach((input) => {
+      input.addEventListener('focus', handleKeyboardVisibility);
+      input.addEventListener('blur', handleKeyboardVisibility);
+    });
+
+    // 컴포넌트 언마운트 시 이벤트 리스너 정리
+    return () => {
+      window.removeEventListener('resize', handleKeyboardVisibility);
+      inputElements.forEach((input) => {
+        input.removeEventListener('focus', handleKeyboardVisibility);
+        input.removeEventListener('blur', handleKeyboardVisibility);
+      });
+    };
   }, [onChange]);
 
   const handleDropdownVisibleChange = (visible: boolean) => {
