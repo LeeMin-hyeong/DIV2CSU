@@ -1,14 +1,30 @@
 'use client';
 
-import { QuestionOutlined } from '@ant-design/icons';
-import { Card, FloatButton } from 'antd';
-import { useState } from 'react';
+import { LoadingOutlined, QuestionOutlined } from '@ant-design/icons';
+import { Card, FloatButton, Spin } from 'antd';
+import { useState, useEffect } from 'react';
 import { HelpModal, PasswordForm } from '../components';
 import { currentSoldier } from '@/app/actions';
 
-export default async function ResetPasswordPage() {
-  const [helpShown, setHelpShwon] = useState(false);
-  const { sn: sn } = await currentSoldier();
+export default function ResetPasswordPage() {
+  const [helpShown, setHelpShown] = useState(false);
+  const [sn, setSn] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { sn } = await currentSoldier();
+      setSn(sn);
+    })();
+  }, []);
+
+  if (!sn) {
+    return (
+      <div className='flex flex-1 min-h-full justify-center items-center'>
+        <Spin indicator={<LoadingOutlined spin />} />
+      </div>
+    );
+  }
+
   return (
     <div className='flex flex-1 flex-col py-2 px-3'>
       <Card>
@@ -23,11 +39,11 @@ export default async function ResetPasswordPage() {
 
       <FloatButton
         icon={<QuestionOutlined />}
-        onClick={() => setHelpShwon(true)}
+        onClick={() => setHelpShown(true)}
       />
       <HelpModal
         shown={helpShown}
-        onPressClose={() => setHelpShwon(false)}
+        onPressClose={() => setHelpShown(false)}
       />
     </div>
   );
