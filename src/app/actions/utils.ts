@@ -21,8 +21,5 @@ export function checkIfSoldierHasPermission(value: number, scope: Permission[]) 
   if (!scope.includes('Nco')) {
     return { message: '상벌점을 줄 권한이 없습니다' };
   }
-  if ((value > 5 || value < -5) && !scope.includes('PointNco')) {
-    return { message: '5점 이상 상벌점을 줄 권한이 없습니다' };
-  }
   return { message: null };
 }

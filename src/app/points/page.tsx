@@ -52,10 +52,12 @@ async function NcoPage({
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
+            <p className='font-bold px-2 py-2'> 상벌점 요청 </p>
             <PointRequestList />
             <Divider />
           </>
         )}
+        <p className='font-bold px-2 pb-2'> 상벌점 부여 기록 </p>
         <PointsHistoryList
           type={user.type}
           data={data}

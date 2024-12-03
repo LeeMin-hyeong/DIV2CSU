@@ -169,6 +169,17 @@ export default function MyProfilePage({
             </Button>
           )}
       </div>
+      <div className='my-3'>
+        {!isViewingMine &&
+          _.intersection(
+            ['Admin', 'PointAdmin', 'ViewPoint'],
+            mySoldier?.permissions,
+          ).length && (
+            <Button href={`/overtimes?sn=${targetSoldier.sn}`}>
+              초과근무 내역 보기
+            </Button>
+          )}
+      </div>
       {isViewingMine && <PasswordForm sn={sn} force={false}/>}
       <div className='my-1' />
       {data?.type !== 'enlisted' && (
