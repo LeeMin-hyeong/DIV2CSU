@@ -10,9 +10,7 @@ export type PointTemplatesInputProps = {
 };
 
 export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
-  const [options, setOptions] = useState<DefaultOptionType[] | undefined>(
-    undefined,
-  );
+  const [options, setOptions] = useState<DefaultOptionType[] | undefined>(undefined);
 
   useEffect(() => {
     fetchPointTemplates().then((newData) => {
@@ -20,9 +18,7 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
         ['공통', '보급', '수송', '의무'].map((value) => ({
           label: value,
           options: newData
-            .filter(({ unit }) =>
-              value === '공통' ? unit == null : unit === value,
-            )
+            .filter(({ unit }) => (value === '공통' ? unit == null : unit === value))
             .map((row) => ({
               id: row.id,
               value: row.reason,
@@ -37,7 +33,8 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
                   <span className='flex-1 inline-block whitespace-normal'>{row.reason}</span>
                   {row.merit && (
                     <Button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation(); // Click event propagation
                         onChange?.(row.reason, row.merit);
                       }}
                       type='primary'
@@ -48,7 +45,8 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
                   {row.demerit && (
                     <Button
                       className='ml-2'
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation(); // Click event propagation
                         onChange?.(row.reason, row.demerit);
                       }}
                       type='primary'
@@ -66,16 +64,24 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
     });
   }, [onChange]);
 
+  const handleDropdownVisibleChange = (visible: boolean) => {
+    if (visible) {
+      // 팝업이 열리면 스크롤 고정
+      document.body.style.overflow = 'hidden';
+    } else {
+      // 팝업이 닫히면 스크롤 해제
+      document.body.style.overflow = '';
+    }
+  };
+
   return (
     <AutoComplete
       size='large'
       popupMatchSelectWidth
       options={options}
+      onDropdownVisibleChange={handleDropdownVisibleChange}
     >
-      <Input.Search
-        size='large'
-        placeholder='상벌점 템플릿'
-      />
+      <Input.Search size='large' placeholder='상벌점 템플릿' />
     </AutoComplete>
   );
 }
