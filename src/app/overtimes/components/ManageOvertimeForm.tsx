@@ -2,7 +2,6 @@
 
 import {
   createOvertime,
-  fetchSoldier,
   searchApprover,
   searchNco,
 } from '@/app/actions';
@@ -128,7 +127,7 @@ export function ManageOvertimeForm() {
   useEffect(() => {
     searchApprover().then((value) => {
       if (value.length === 1) {
-        form.setFieldsValue({ approverId: value[0].sn }); // 필드에 군번 자동 입력
+        form.setFieldsValue({ approverId: value[0].sn });
         setApproverName(value[0].name)
       }
     });
@@ -207,7 +206,7 @@ export function ManageOvertimeForm() {
         </Card>
         <Divider />
         <Form.Item<string>
-          label={giverName !== '' ? `지시자 : ${giverName}` : '지시자'}
+          label={giverName !== '' ? `지시자: ${giverName}` : '지시자'}
           name='giverId'
           rules={[
             { required: true, message: '지시자를 입력해주세요' },
@@ -222,19 +221,14 @@ export function ManageOvertimeForm() {
             onSearch={debouncedSearch.soldier}
             onChange={(value) => {
               const selectedOption = soldierOptions.find((t) => t.sn === value);
-              if (selectedOption) {
-                setGiverName(selectedOption.name);
-              }
-              else {
-                setGiverName('')
-              }
+              setGiverName(selectedOption ? selectedOption.name : '');
             }}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
         </Form.Item>
         <Form.Item<string>
-          label={approverName !== '' ? `확인관 : ${approverName}` : '확인관'}
+          label={approverName !== '' ? `확인관: ${approverName}` : '확인관'}
           name='approverId'
           rules={[
             { required: true, message: '확인관을 입력해주세요' },
@@ -249,12 +243,7 @@ export function ManageOvertimeForm() {
             onSearch={debouncedSearch.approver}
             onChange={(value) => {
               const selectedOption = approverOptions.find((t) => t.sn === value);
-              if (selectedOption) {
-                setApproverName(selectedOption.name);
-              }
-              else {
-                setApproverName('')
-              }
+              setApproverName(selectedOption ? selectedOption.name : '');
             }}
           >
             <Input.Search loading={searching} />

@@ -3,7 +3,7 @@
 import { sql } from 'kysely';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
-import { checkIfSoldierHasPermission, hasPermission } from './utils';
+import { hasPermission } from './utils';
 
 export async function fetchOvertime(overtimeId: string) {
   return kysely
@@ -168,6 +168,9 @@ export async function verifyOvertime(
   if (!value && rejectReason == null) {
     return { message: '반려 사유를 입력해주세요' };
   }
+  if (!hasPermission(current.permissions, ['Nco'])) {
+    return { message: '초과근무를 승인할 권한이 없습니다' };
+  }
   try {
     await kysely
       .updateTable('overtimes')
@@ -204,6 +207,9 @@ export async function approveOvertime(
   }
   if (!value && disapprovedReason == null) {
     return { message: '반려 사유를 입력해주세요' };
+  }
+  if (!hasPermission(current.permissions, ['Approver'])) {
+    return { message: '초과근무를 승인할 권한이 없습니다' };
   }
   try {
     await kysely
@@ -303,9 +309,9 @@ export async function createOvertime({
     new Date(endedTime).getHours()+9,
     new Date(endedTime).getMinutes()
   );
-  const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
+  const duration  = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
   const startedAt = startedDateTime.toISOString();
-  const endedAt = endedDateTime.toISOString();
+  const endedAt   = endedDateTime.toISOString();
   try {
     await kysely
       .insertInto('overtimes')

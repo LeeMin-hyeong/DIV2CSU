@@ -2,10 +2,10 @@
 
 import {
   createPoint,
-  fetchSoldier,
   searchEnlisted,
   searchNco,
   searchCommander,
+  searchTargetCommander,
 } from '@/app/actions';
 import {
   App,
@@ -40,6 +40,8 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
   const [target, setTarget] = useState('')
+  const [targetSn, setTargetSn] = useState('')
+  const [commander, setCommander] = useState('')
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -110,6 +112,31 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     [router, merit, form, message, type],
   );
 
+  useEffect(() => {
+    if(type === 'request'){
+      searchTargetCommander().then((value) => {
+        if (value.length === 1) {
+          form.setFieldsValue({ commanderId: value[0].sn });
+          setCommander(value[0].name);
+        }
+      });
+    }
+  }, [form, type]);
+
+  useEffect(() => {
+    if(type === 'give' && targetSn !== ''){
+      searchTargetCommander(targetSn).then((value) => {
+        if (value.length === 1) {
+          form.setFieldsValue({ commanderId: value[0].sn });
+          setCommander(value[0].name);
+        } else {
+          form.setFieldsValue({ commanderId: ''});
+          setCommander('');
+        }
+      });
+    }
+  }, [targetSn, type]);
+
   return (
     <div className='px-4'>
       <div className='my-5' />
@@ -155,12 +182,17 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               label: renderPlaceholder(t),
             }))}
             onSearch={debouncedSearch.soldier}
+            onChange={(value) => {
+              setTargetSn(value);
+              const selectedOption = soldierOptions.find((t) => t.sn === value);
+              setTarget(selectedOption ? selectedOption.name : '');
+            }}
           >
             <Input.Search loading={searching} />
           </AutoComplete>
         </Form.Item>
         <Form.Item<string>
-          label='승인자'
+          label={commander !== '' ? `승인자: ${commander}` : '승인자'}
           name='commanderId'
           rules={[
             { required: true, message: '승인자를 입력해주세요' },
@@ -173,13 +205,8 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               label: renderPlaceholder(t),
             }))}
             onChange={(value) => {
-              const selectedOption = options.find((t) => t.sn === value);
-              if (selectedOption) {
-                setTarget(selectedOption.name); // 선택된 sn에 대응하는 name 설정
-              }
-              else {
-                setTarget('')
-              }
+              const selectedOption = commanderOptions.find((t) => t.sn === value);
+              setCommander(selectedOption ? selectedOption.name : '');
             }}
             onSearch={debouncedSearch.commander}
           >
