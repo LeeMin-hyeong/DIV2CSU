@@ -125,11 +125,10 @@ export default function UsePointFormPage() {
               label: renderPlaceholder(t),
             }))}
             onChange={async (value: string) => {
-              const { merit, usedMerit, demerit } = await fetchPointSummary(
-                value,
-              );
+              const selectedOption = options.find((t) => t.sn === value);
+              setTarget(selectedOption ? selectedOption.name : ''); // 선택된 sn에 대응하는 name 설정
+              const { merit, usedMerit, demerit } = await fetchPointSummary(value);
               setAvailablePoints(merit - usedMerit + demerit);
-              await fetchSoldier(value).then((soldier) => setTarget(soldier.name))
             }}
             onSearch={handleSearch}
           >
