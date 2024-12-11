@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { debounce } from 'lodash';
+import { withMask } from 'use-mask-input';
 
 export function ManageOvertimeForm() {
   const [form] = Form.useForm();
@@ -33,10 +34,10 @@ export function ManageOvertimeForm() {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
-  const [startDate, setStartDate] = useState(null);
-  const [startTime, setStartTime] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [endTime, setEndTime] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [overtimeDuration, setOvertimeDuration] = useState('');
   const [giverName, setGiverName] = useState('');
   const [approverName, setApproverName] = useState('');
@@ -76,7 +77,7 @@ export function ManageOvertimeForm() {
     if (startDate && startTime && endDate && endTime) {
       const startDateTime = moment(`${startDate} ${startTime}`, 'YYYY-MM-DD HH:mm');
       const endDateTime = moment(`${endDate} ${endTime}`, 'YYYY-MM-DD HH:mm');
-      const duration = Math.floor((endDateTime.valueOf() - startDateTime.valueOf())/60000);
+      const duration = endDateTime.diff(startDateTime, 'minutes');
 
       if (duration > 0) {
         const hours = Math.floor(duration / 60);
@@ -103,6 +104,7 @@ export function ManageOvertimeForm() {
     async (newForm: any) => {
       await form.validateFields();
       setLoading(true);
+      console.log(newForm.startedDate.$d)
       createOvertime({
         ...newForm,
         startedDate: newForm.startedDate,
@@ -161,15 +163,31 @@ export function ManageOvertimeForm() {
           <Form.Item
             name='startedTime'
             colon={false}
-            rules={[{ required: true, message: '초과근무 시작시간을 입력해주세요' }]}
+            rules={[
+              { required: true, message: '초과근무 시작시간을 입력해주세요' },
+              { validator: validateEndDate },
+              {
+                validator: (_, value) => {
+                  if (value) {
+                    const [hours, minutes] = value.split(':').map(Number);
+                    if (hours > 23) {
+                      return Promise.reject(new Error('시작 시간은 23:59을 초과할 수 없습니다.'));
+                    }
+                  }
+                  return Promise.resolve();
+                },
+              },
+              { pattern: /^[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}$/, message: '잘못된 시간입니다' }
+            ]}
           >
-            <TimePicker
+            <Input
+              ref={(ref) =>
+                withMask('99:99', { placeholder: '' })(ref?.input!)
+              }
+              type='text'
               placeholder='시작 시각'
-              format='HH:mm'
-              inputReadOnly
-              locale={locale}
-              onChange={(time: any) => setStartTime(time ? time.format('HH:mm') : null)}
-              needConfirm={false}
+              inputMode='numeric'
+              onChange={(e: any) => setStartTime(e.target.value ? e.target.value : null)}
             />
           </Form.Item>
         </div>
@@ -190,16 +208,32 @@ export function ManageOvertimeForm() {
           <Form.Item
             name='endedTime'
             colon={false}
-            rules={[{ required: true, message: '초과근무 종료시간을 입력해주세요' }, {validator: validateEndDate}]}
+            rules={[
+              { required: true, message: '초과근무 종료시간을 입력해주세요' },
+              { validator: validateEndDate },
+              {
+                validator: (_, value) => {
+                  if (value) {
+                    const [hours, minutes] = value.split(':').map(Number);
+                    if (hours > 23) {
+                      return Promise.reject(new Error('종료 시간은 23:59을 초과할 수 없습니다.'));
+                    }
+                  }
+                  return Promise.resolve();
+                },
+              },
+              { pattern: /^[0-2]{1}[0-9]{1}:[0-5]{1}[0-9]{1}$/, message: '잘못된 시간입니다' }
+            ]}
           >
-            <TimePicker
+            <Input
+              ref={(ref) =>
+                withMask('99:99', { placeholder: '' })(ref?.input!)
+              }
+              type='text'
               placeholder='종료 시각'
-              format='HH:mm'
-              inputReadOnly
-              locale={locale}
-              onChange={(time: any) => setEndTime(time ? time.format('HH:mm') : null)}
-              needConfirm={false}
-              />
+              inputMode='numeric'
+              onChange={(e: any) => setEndTime(e.target.value ? e.target.value : null)}
+            />
           </Form.Item>
         </div>
         <Card className='mx-2 font-bold' id='print_overtime' size='small'>
