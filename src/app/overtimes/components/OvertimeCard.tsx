@@ -91,9 +91,9 @@ export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
             )}
             <p>
               {
-                moment(overtime?.started_at).local().format('YYYYMMDD') === moment(overtime?.ended_at).local().format('YYYYMMDD') ?
-                  `${moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).local().format('HH:mm')}` :
-                  `${moment(overtime?.started_at).local().format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).local().format('YYYY년 MM월 DD일 HH:mm')}`
+                moment(overtime?.started_at).format('YYYYMMDD') === moment(overtime?.ended_at).format('YYYYMMDD') ?
+                  `${moment(overtime?.started_at).format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).format('HH:mm')}` :
+                  `${moment(overtime?.started_at).format('YYYY년 MM월 DD일 HH:mm')} ~ ${moment(overtime?.ended_at).format('YYYY년 MM월 DD일 HH:mm')}`
               }
             </p>
             <p>{overtime?.reason}</p>

@@ -3,7 +3,7 @@
 import { Permission } from '@/interfaces';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
-import { hasPermission, validatePermission } from './utils';
+import { hasPermission } from './utils';
 
 export async function updatePermissions({
   sn,
@@ -24,9 +24,6 @@ export async function updatePermissions({
     return { message: '권한 수정 권한이 없습니다' };
   }
   if (hasPermission(permissions, ['Admin'])) {
-    return { message: '관리자 권한은 추가할 수 없습니다' };
-  }
-  if (!validatePermission(permissions)) {
     return { message: '관리자 권한은 추가할 수 없습니다' };
   }
   try {

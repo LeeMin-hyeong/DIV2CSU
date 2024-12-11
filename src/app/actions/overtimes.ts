@@ -3,7 +3,7 @@
 import { sql } from 'kysely';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
-import { checkIfSoldierHasPermission, hasPermission } from './utils';
+import { hasPermission } from './utils';
 
 export async function fetchOvertime(overtimeId: string) {
   return kysely
@@ -257,16 +257,13 @@ export async function createOvertime({
   endedDate,
   endedTime,
 }: {
-  value:       number;
-  giverId?:    string | null;
-  receiverId?: string | null;
-  approverId?: string;
+  giverId:     string;
+  approverId:  string;
   reason:      string;
-  givenAt:     Date;
   startedDate: Date;
-  startedTime: Date;
+  startedTime: string;
   endedDate:   Date;
-  endedTime:   Date;
+  endedTime:   string;
 }) {
   if (reason.trim() === '') {
     return { message: '초과근무 내용을 작성해주세요' };
@@ -293,15 +290,15 @@ export async function createOvertime({
     new Date(startedDate).getFullYear(),
     new Date(startedDate).getMonth(),
     new Date(startedDate).getDate(),
-    new Date(startedTime).getHours()+9,
-    new Date(startedTime).getMinutes()
+    Number(startedTime.split(':')[0]) + 9,
+    Number(startedTime.split(':')[1])
   );
   const endedDateTime = new Date(
     new Date(endedDate).getFullYear(),
     new Date(endedDate).getMonth(),
     new Date(endedDate).getDate(),
-    new Date(endedTime).getHours()+9,
-    new Date(endedTime).getMinutes()
+    Number(endedTime.split(':')[0]) + 9,
+    Number(endedTime.split(':')[1])
   );
   const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
   const startedAt = startedDateTime.toISOString();
@@ -336,7 +333,7 @@ export async function redeemOvertime({
   reason: string;
 }) {
   if (reason.trim() === '') {
-    return { message: '상벌점 사용 이유를 작성해주세요' };
+    return { message: '초과근무 사용 이유를 작성해주세요' };
   }
   if (value !== Math.round(value)) {
     return { message: '휴가일수는 정수여야 합니다' };

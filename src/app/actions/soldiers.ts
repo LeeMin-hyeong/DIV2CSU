@@ -8,7 +8,6 @@ import { cache } from 'react';
 import { validateSoldier } from './auth';
 import { kysely } from './kysely';
 import { hasPermission } from './utils';
-import { TableExpression } from 'kysely';
 
 export async function unauthenticated_currentSoldier() {
   const accessToken = cookies().get('auth.access_token')?.value;
