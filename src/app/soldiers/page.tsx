@@ -8,7 +8,6 @@ import {
   FloatButton,
   Input,
   Popconfirm,
-  Radio,
   Select,
   Spin,
   message,
@@ -29,7 +28,6 @@ import {
   PasswordModal,
   PermissionsTransfer,
 } from './components';
-import { useRouter } from 'next/navigation';
 
 export default function MyProfilePage({
   searchParams: { sn },
@@ -49,7 +47,6 @@ export default function MyProfilePage({
   const [helpShown, setHelpShwon] = useState(false);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [newPassword, setNewPassword] = useState<string | null>(null);
-  const router = useRouter();
 
   useLayoutEffect(() => {
     Promise.all([currentSoldier(), sn ? fetchSoldier(sn) : null]).then(

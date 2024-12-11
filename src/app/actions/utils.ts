@@ -1,17 +1,11 @@
 import { Permission } from '@/interfaces';
 import _ from 'lodash';
-import z from 'zod';
 
 export function hasPermission(
   permissions: Permission[],
   requires:    Permission[],
 ) {
   return !!_.intersection(requires, permissions).length;
-}
-
-export function validatePermission(permissions: Permission[]) {
-  const { success } = z.array(Permission).safeParse(permissions);
-  return success;
 }
 
 export function checkIfSoldierHasPermission(value: number, scope: Permission[]) {

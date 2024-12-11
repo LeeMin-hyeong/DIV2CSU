@@ -2,7 +2,6 @@
 
 import {
   createPoint,
-  fetchSoldier,
   searchEnlisted,
   searchNco,
 } from '@/app/actions';

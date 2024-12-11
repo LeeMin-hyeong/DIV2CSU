@@ -149,13 +149,13 @@ export default function UsePointFormPage() {
             inputMode='numeric'
             onChange={(value) => {
               if(value != null && value == 16){
-                form.setFieldValue('reason', '외출 사용')
+                form.setFieldValue('reason', '포상 외출 사용')
               }
               else if(value != null &&value == 32){
-                form.setFieldValue('reason', '외박 사용')
+                form.setFieldValue('reason', '포상 외박 사용')
               }
               else if(value != null &&value % 48 == 0){
-                form.setFieldValue('reason', `휴가 ${Math.floor(value/48)}일 사용`)
+                form.setFieldValue('reason', `포상 휴가 ${Math.floor(value/48)}일 사용`)
               }
               else{
                 form.setFieldValue('reason', null)
