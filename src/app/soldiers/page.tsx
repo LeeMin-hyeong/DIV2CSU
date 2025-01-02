@@ -162,29 +162,26 @@ export default function MyProfilePage({
           />
         </div>
       </div>
-      <div className='my-3'>
-        {!isViewingMine && hasPermission(mySoldier!?.permissions, ['Admin', 'Commander']) && (
-            <Button href={`/points?sn=${targetSoldier.sn}`}>
-              상점 내역 보기
-            </Button>
-          )}
-      </div>
-      <div className='my-3'>
-        {!isViewingMine &&
-          _.intersection(
-            ['Admin', 'PointAdmin', 'ViewPoint'],
-            mySoldier?.permissions,
-          ).length && (
-            <Button href={`/overtimes?sn=${targetSoldier.sn}`}>
-              초과근무 내역 보기
-            </Button>
-          )}
-      </div>
-      {isViewingMine && <PasswordForm sn={sn} force={false}/>}
+      {(!isViewingMine && hasPermission(mySoldier!?.permissions, ['Admin', 'Commander'])) ? (
+        <div className='my-3'>
+          <Button href={`/points?sn=${targetSoldier.sn}`}>
+            상점 내역 보기
+          </Button>
+        </div>
+      ): null}
+      {(!isViewingMine && hasPermission(mySoldier!?.permissions, ['Admin', 'Commander'])) ? (
+        <div className='my-3'>
+          <Button href={`/overtimes?sn=${targetSoldier.sn}`}>
+            초과근무 내역 보기
+          </Button>
+        </div>
+      ): null}
+      {isViewingMine ? <PasswordForm sn={sn} force={false}/> : null}
       <div className='my-1' />
       {data?.type !== 'enlisted' && (
         <>
           <PermissionsTransfer
+            currentUserPermissions={mySoldier?.permissions!}
             permissions={permissions as Permission[]}
             onChange={(t) => setPermissions(t)}
           />

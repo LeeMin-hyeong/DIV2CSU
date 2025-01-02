@@ -19,19 +19,18 @@ import _ from 'lodash';
 import { usePathname, useRouter } from 'next/navigation';
 import { MenuClickEventHandler } from 'rc-menu/lib/interface';
 import { useCallback, useMemo, useState } from 'react';
-import { currentSoldier, signOut } from './actions';
-import { hasPermission } from './actions/utils';
+import { currentSoldier, signOut, hasPermission } from './actions';
 
 const title = {
-  '/points': '상점 관리',
-  '/points/request': '상점 요청',
-  '/points/give': '상점 부여',
-  '/points/redeem': '상점 사용',
-  '/soldiers/list': '유저 관리',
-  '/soldiers/signup': '회원가입 관리',
-  '/overtimes': '초과근무 관리',
+  '/points'           : '상점 관리',
+  '/points/request'   : '상점 요청',
+  '/points/give'      : '상점 부여',
+  '/points/redeem'    : '상점 사용',
+  '/soldiers/list'    : '유저 관리',
+  '/soldiers/signup'  : '회원가입 관리',
+  '/overtimes'        : '초과근무 관리',
   '/overtimes/request': '초과근무 요청',
-  '/overtimes/redeem': '초과근무 사용',
+  '/overtimes/redeem' : '초과근무 사용',
 };
 
 function renderTitle(pathname: string) {

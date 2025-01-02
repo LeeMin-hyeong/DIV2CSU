@@ -22,7 +22,7 @@ export const ALL_PERMISSIONS: {
   },
   Nco: {
     key: 'Nco',
-    title: '상벌점 부여',
+    title: '상벌점 / 초과근무 부여',
   },
   Approver: {
     key: 'Approver',
