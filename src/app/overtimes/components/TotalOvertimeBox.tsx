@@ -21,17 +21,17 @@ export function TotalOvertimeBox({ user }: { user: Soldier }) {
     <div onClick={() => {router.push('/overtimes')}}>
       <Card className='flex-1'>
         <Skeleton
-          paragraph={{ rows: 1 }}
+          paragraph={{ rows: 2 }}
           active
           loading={data == null}
         >
           {data ? (
             <div>
-              <span className='mx-2' style={{fontWeight: 'bold'}}>초과근무</span>
-              <span className='mx-2' style={{fontWeight: 'bold'}}>
-                {((data.overtime-data.usedOvertime*1440) >= 1440) ? Math.floor((data.overtime-data.usedOvertime*1440)/1440)+'일 ' : ''} 
-                {Math.floor((data.overtime-data.usedOvertime*1440)%1440/60)+'시간 '}
-                {(data.overtime-data.usedOvertime*1440)%1440%60+'분'}
+              <span className='mx-2' style={{fontWeight: 'bold', fontSize: '17px'}}>초과근무</span>
+              <span className='mx-2' style={{fontWeight: 'bold', fontSize: '17px', color: '#3f8600'}}>
+                {((data.overtime-data.usedOvertime) >= 1440) ? Math.floor((data.overtime-data.usedOvertime)/1440)+'일 ' : ''} 
+                {Math.floor((data.overtime-data.usedOvertime)%1440/60)+'시간 '}
+                {(data.overtime-data.usedOvertime)%1440%60+'분'}
               </span>
               <Divider/>
               <Flex vertical={false}>

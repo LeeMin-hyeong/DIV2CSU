@@ -2,7 +2,6 @@
 
 import {
   createOvertime,
-  fetchSoldier,
   searchApprover,
   searchNco,
 } from '@/app/actions';
@@ -15,7 +14,6 @@ import {
   Divider,
   Form,
   Input,
-  TimePicker
 } from 'antd';
 import locale from 'antd/es/date-picker/locale/ko_KR';
 import { useRouter } from 'next/navigation';
@@ -104,13 +102,16 @@ export function ManageOvertimeForm() {
     async (newForm: any) => {
       await form.validateFields();
       setLoading(true);
-      console.log(newForm.startedDate.$d)
+      const startedAt = moment(newForm.startedDate).format('YYYY-MM-DD ') + newForm.startedTime;
+      const endedAt = moment(newForm.endedDate).format('YYYY-MM-DD ') + newForm.endedTime;
+      const value = moment(endedAt).diff(moment(startedAt), 'minutes');
       createOvertime({
-        ...newForm,
-        startedDate: newForm.startedDate,
-        startedTime: newForm.startedTime,
-        endedDate:   newForm.endedDate,
-        endedTime:   newForm.endedTime,
+        giverId:    newForm.giverId,
+        approverId: newForm.approverId,
+        reason:     newForm.reason,
+        startedAt:  startedAt,
+        endedAt:    endedAt,
+        value:      value,
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {

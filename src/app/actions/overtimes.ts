@@ -168,6 +168,9 @@ export async function verifyOvertime(
   if (!value && rejectReason == null) {
     return { message: '반려 사유를 입력해주세요' };
   }
+  if (!hasPermission(current.permissions, ['Nco'])) {
+    return { message: '초과근무를 승인할 권한이 없습니다' };
+  }
   try {
     await kysely
       .updateTable('overtimes')
@@ -205,6 +208,9 @@ export async function approveOvertime(
   if (!value && disapprovedReason == null) {
     return { message: '반려 사유를 입력해주세요' };
   }
+  if (!hasPermission(current.permissions, ['Approver'])) {
+    return { message: '초과근무를 승인할 권한이 없습니다' };
+  }
   try {
     await kysely
       .updateTable('overtimes')
@@ -221,7 +227,6 @@ export async function approveOvertime(
   }
 }
 
-// 초과근무: 분 단위, 초과근무 사용: 일 단위
 export async function fetchOvertimeSummary(sn: string) {
   const overtimesQuery = kysely.selectFrom('overtimes').where('receiver_id', '=', sn);
   const usedOvertimesQuery = kysely
@@ -252,18 +257,16 @@ export async function createOvertime({
   giverId,
   approverId,
   reason,
-  startedDate,
-  startedTime,
-  endedDate,
-  endedTime,
+  startedAt,
+  endedAt,
+  value,
 }: {
-  giverId:     string;
-  approverId:  string;
-  reason:      string;
-  startedDate: Date;
-  startedTime: string;
-  endedDate:   Date;
-  endedTime:   string;
+  giverId:    string;
+  approverId: string;
+  reason:     string;
+  startedAt:  string; // format: YYYY-MM-DD HH:mm
+  endedAt:    string; // format: YYYY-MM-DD HH:mm
+  value:      number; // minutes
 }) {
   if (reason.trim() === '') {
     return { message: '초과근무 내용을 작성해주세요' };
@@ -286,23 +289,6 @@ export async function createOvertime({
   if (giverId === sn) {
     return { message: '스스로에게 수여할 수 없습니다' };
   }
-  const startedDateTime = new Date(
-    new Date(startedDate).getFullYear(),
-    new Date(startedDate).getMonth(),
-    new Date(startedDate).getDate(),
-    Number(startedTime.split(':')[0]) + 9,
-    Number(startedTime.split(':')[1])
-  );
-  const endedDateTime = new Date(
-    new Date(endedDate).getFullYear(),
-    new Date(endedDate).getMonth(),
-    new Date(endedDate).getDate(),
-    Number(endedTime.split(':')[0]) + 9,
-    Number(endedTime.split(':')[1])
-  );
-  const duration = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
-  const startedAt = startedDateTime.toISOString();
-  const endedAt = endedDateTime.toISOString();
   try {
     await kysely
       .insertInto('overtimes')
@@ -311,7 +297,7 @@ export async function createOvertime({
         giver_id:    giverId!,
         approver_id: approverId!,
         reason:      reason,
-        value:       duration,
+        value:       value,
         verified_at: null,
         started_at:  startedAt,
         ended_at:    endedAt,
@@ -381,7 +367,7 @@ export async function redeemOvertime({
         )
         .executeTakeFirstOrThrow(),
     ]);
-    if (parseInt(total, 10) - parseInt(used_overtimes, 10)*1440 < value*1440) {
+    if (parseInt(total, 10) - parseInt(used_overtimes, 10) < value*60) {
       return { message: '초과근무 시간이 부족합니다' };
     }
     await kysely
