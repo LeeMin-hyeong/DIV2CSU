@@ -27,6 +27,25 @@ export default async function RootLayout({
   const data = await unauthenticated_currentSoldier();
   return (
     <html lang='ko'>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <style>{`
+          html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* 스크롤 숨기기 */
+          }
+
+          body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+        `}</style>
+      </head>
       <body>
         <AntDesignRegistry>
           <MenuLayout data={data}>{children}</MenuLayout>
