@@ -30,12 +30,13 @@ export default async function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <style>{`
           html, body {
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden; /* 스크롤 숨기기 */
+            overflow: hidden;
           }
 
           body {
