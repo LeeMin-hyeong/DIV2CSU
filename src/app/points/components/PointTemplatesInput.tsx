@@ -61,29 +61,36 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
       );
     });
 
-    // 키보드 열림/닫힘 시 스크롤 고정 처리
+    // 모바일에서 키보드 열릴 때 스크롤 고정 처리
     const handleKeyboardVisibility = () => {
-      // 키보드가 열린 경우
-      if (document.activeElement instanceof HTMLInputElement) {
-        document.body.style.overflow = 'hidden'; // 스크롤 고정
+      const focusedElement = document.activeElement as HTMLElement;
+
+      // 키보드가 열리면 스크롤 고정
+      if (focusedElement && focusedElement.tagName === 'INPUT') {
+        document.documentElement.style.overflow = 'hidden'; // 스크롤 고정
       } else {
-        document.body.style.overflow = ''; // 스크롤 해제
+        document.documentElement.style.overflow = ''; // 스크롤 해제
       }
     };
 
-    // Resize 이벤트 감지
-    window.addEventListener('resize', handleKeyboardVisibility);
+    // 키보드 열기/닫기 감지
+    const handleResize = () => {
+      handleKeyboardVisibility(); // 화면 크기 변경 시에도 호출하여 키보드 열림/닫힘 상태 체크
+    };
 
-    // Focus/Blur 이벤트 감지
+    // Focus/Blur 이벤트 감지 (모바일에서 키보드가 열릴 때 처리)
     const inputElements = document.querySelectorAll('input, textarea');
     inputElements.forEach((input) => {
       input.addEventListener('focus', handleKeyboardVisibility);
       input.addEventListener('blur', handleKeyboardVisibility);
     });
 
+    // Resize 이벤트 감지
+    window.addEventListener('resize', handleResize);
+
     // 컴포넌트 언마운트 시 이벤트 리스너 정리
     return () => {
-      window.removeEventListener('resize', handleKeyboardVisibility);
+      window.removeEventListener('resize', handleResize);
       inputElements.forEach((input) => {
         input.removeEventListener('focus', handleKeyboardVisibility);
         input.removeEventListener('blur', handleKeyboardVisibility);
@@ -94,10 +101,10 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
   const handleDropdownVisibleChange = (visible: boolean) => {
     if (visible) {
       // 팝업이 열리면 스크롤 고정
-      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       // 팝업이 닫히면 스크롤 해제
-      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
   };
 
