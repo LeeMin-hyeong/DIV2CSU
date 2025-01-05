@@ -31,7 +31,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body style={{overflowX: 'hidden'}}>
+      <body style={{overflowX: 'hidden', scrollbarWidth: 'none'}}>
         <AntDesignRegistry>
           <MenuLayout data={data}>{children}</MenuLayout>
         </AntDesignRegistry>
