@@ -27,7 +27,11 @@ export default async function RootLayout({
   const data = await unauthenticated_currentSoldier();
   return (
     <html lang='ko'>
-      <body>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
+      <body style={{overflow: 'hidden'}}>
         <AntDesignRegistry>
           <MenuLayout data={data}>{children}</MenuLayout>
         </AntDesignRegistry>
