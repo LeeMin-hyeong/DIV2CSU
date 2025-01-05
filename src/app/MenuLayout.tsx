@@ -256,7 +256,7 @@ export function MenuLayout({
                 {renderTitle(pathname)}
               </p>
             </Layout.Header>
-            <Layout.Content>{children}</Layout.Content>
+            <Layout.Content onClick={useCallback(() => setCollapsed((state) => !state ? !state : state), [])}>{children}</Layout.Content>
             <Layout.Footer style={{ textAlign: 'center' }}>
               <span className='text-black font-bold'>
                 ©{new Date().getFullYear()} 키보드워리어
