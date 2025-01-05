@@ -2,7 +2,6 @@
 
 import {
   fetchPointSummary,
-  fetchSoldier,
   redeemPoint,
   searchEnlisted,
 } from '@/app/actions';
@@ -125,11 +124,10 @@ export default function UsePointFormPage() {
               label: renderPlaceholder(t),
             }))}
             onChange={async (value: string) => {
-              const { merit, usedMerit, demerit } = await fetchPointSummary(
-                value,
-              );
+              const selectedOption = options.find((t) => t.sn === value);
+              setTarget(selectedOption ? selectedOption.name : ''); // 선택된 sn에 대응하는 name 설정
+              const { merit, usedMerit, demerit } = await fetchPointSummary(value);
               setAvailablePoints(merit - usedMerit + demerit);
-              await fetchSoldier(value).then((soldier) => setTarget(soldier.name))
             }}
             onSearch={handleSearch}
           >
@@ -138,7 +136,17 @@ export default function UsePointFormPage() {
         </Form.Item>
         <Form.Item<number>
           name='value'
-          rules={[{ required: true, message: '상벌점을 입력해주세요' }]}
+          rules={[
+            { required: true, message: '상벌점을 입력해주세요' },
+            {
+              validator: (_, value) => {
+                if (value != null && availablePoints != null && value > availablePoints) {
+                  return Promise.reject(new Error('입력 값이 사용 가능한 상점을 초과했습니다.'));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <InputNumber<number>
             min={1}
@@ -150,13 +158,13 @@ export default function UsePointFormPage() {
             inputMode='numeric'
             onChange={(value) => {
               if(value != null && value == 16){
-                form.setFieldValue('reason', '외출 사용')
+                form.setFieldValue('reason', '포상 외출 사용')
               }
-              else if(value != null &&value == 32){
-                form.setFieldValue('reason', '외박 사용')
+              else if(value != null && value == 32){
+                form.setFieldValue('reason', '포상 외박 사용')
               }
-              else if(value != null &&value % 48 == 0){
-                form.setFieldValue('reason', `휴가 ${Math.floor(value/48)}일 사용`)
+              else if(value != null && value % 48 == 0){
+                form.setFieldValue('reason', `포상 휴가 ${Math.floor(value/48)}일 사용`)
               }
               else{
                 form.setFieldValue('reason', null)

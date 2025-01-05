@@ -3,7 +3,7 @@
 import { sql } from 'kysely';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
-import { checkIfSoldierHasPermission, hasPermission } from './utils';
+import { hasPermission } from './utils';
 
 export async function fetchPoint(pointId: string) {
   return kysely
@@ -31,7 +31,7 @@ export async function listPoints(sn: string, page: number = 0) {
       .orderBy('created_at desc')
       .select(['id'])
       .limit(20)
-      .offset(Math.min(0, page) * 20)
+      .offset(Math.max(0, page-1) * 20)
       .execute(),
     query
       .select((eb) => eb.fn.count<string>('id').as('count'))
@@ -152,14 +152,8 @@ export async function verifyPoint(
   if (!value && rejectReason == null) {
     return { message: '반려 사유를 입력해주세요' };
   }
-  if (value) {
-    const { message } = checkIfSoldierHasPermission(
-      point.value,
-      current.permissions,
-    );
-    if (message) {
-      return { message };
-    }
+  if (!hasPermission(current.permissions, ['Nco'])) {
+    return { message: '상벌점을 줄 권한이 없습니다' };
   }
   try {
     await kysely
@@ -261,9 +255,8 @@ export async function createPoint({
       return { message: '알 수 없는 오류가 발생했습니다' };
     }
   }
-  const { message } = checkIfSoldierHasPermission(value, permissions);
-  if (message) {
-    return { message };
+  if (!hasPermission(permissions, ['Nco'])) {
+    return { message: '상벌점을 줄 권한이 없습니다' };
   }
   try {
     await kysely
