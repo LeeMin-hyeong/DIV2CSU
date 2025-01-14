@@ -68,9 +68,11 @@ export function PointTemplatesInput({ onChange }: PointTemplatesInputProps) {
 
   return (
     <AutoComplete
+      id='templates'
       size='large'
       popupMatchSelectWidth
       options={options}
+      getPopupContainer={c => c.parentElement}
     >
       <Input.Search
         size='large'
