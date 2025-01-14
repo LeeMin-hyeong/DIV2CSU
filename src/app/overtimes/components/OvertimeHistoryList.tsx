@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 export type OvertimeHistoryListProps = { type: 'enlisted'|'nco'; data: { id: string, verified_at: Date | null, approved_at: Date | null }[] };
 
-export async function OvertimeHistoryList({
+export function OvertimeHistoryList({
   data,
   type,
 }: OvertimeHistoryListProps) {
@@ -51,7 +51,7 @@ export async function OvertimeHistoryList({
     });
   
     return newItems;
-  }, [data, type, unverified, verified]);
+  }, [data, type, unverified, verified, unapproved]);
 
   return (
     <div>

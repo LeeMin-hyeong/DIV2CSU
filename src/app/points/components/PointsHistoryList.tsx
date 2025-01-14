@@ -21,10 +21,11 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
     );
   }
 
-  const unverified = useMemo(() => data.filter((d) => d.verified_at === null), [data]);
-  const verified = useMemo(() => data.filter((d) => d.verified_at !== null), [data]);
+  const unverified = data.filter((d) => d.verified_at === null);
+  const verified = data.filter((d) => d.verified_at !== null);
 
   const items = useMemo(() => {
+    if (!data) return [];
     const enlistedItems = [];
 
     if (type === 'enlisted') {

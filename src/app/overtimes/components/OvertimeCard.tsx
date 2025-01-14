@@ -28,7 +28,7 @@ export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
         message.error(newMessage);
       }
     });
-  }, [overtimeId]);
+  }, [overtimeId, router]);
 
   useLayoutEffect(() => {
     fetchOvertime(overtimeId).then((data) => {

@@ -40,7 +40,7 @@ export function PasswordForm({ sn, force }: PasswordFormProps) {
     .finally(() => {
       setMutating(false);
     });
-  }, [notification, sn]);
+  }, [notification, sn, force, router]);
 
   return (
     <Form

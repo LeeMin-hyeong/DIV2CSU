@@ -64,7 +64,7 @@ export function OvertimeRequestCard({ overtimeId, type }: OvertimeRequestCardPro
         setModalShown(true);
       }
     },
-    [overtimeId, success, router],
+    [overtimeId, success, router, type],
   );
 
   const handleReject = useCallback(() => {
@@ -87,7 +87,7 @@ export function OvertimeRequestCard({ overtimeId, type }: OvertimeRequestCardPro
         setLoading(false);
         router.refresh();
       });
-  }, [overtimeId, rejectReason, router]);
+  }, [overtimeId, rejectReason, router, type]);
 
   useLayoutEffect(() => {
     fetchOvertime(overtimeId).then((data) => {

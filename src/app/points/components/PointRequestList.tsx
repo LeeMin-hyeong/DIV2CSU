@@ -17,6 +17,7 @@ export function PointRequestList({ data }: PointRequestListProps) {
   }
 
   const items = useMemo(() => {
+    if (!data) return [];
     return [
       {
         key: 'requested',

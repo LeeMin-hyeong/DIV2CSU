@@ -24,6 +24,7 @@ export function OvertimeRequestList({ type, data }: OvertimeRequestListProps) {
   }
 
   const items = useMemo(() => {
+    if (!data) return [];
     return [
       {
         key: 'requested',
