@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 export type PointsHistoryListProps = { type: 'enlisted' | 'nco'; data: { id: string, verified_at: Date | null }[] };
 
 export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className='py-5 my-5'>
         <Empty
@@ -43,7 +43,7 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
     });
 
     return enlistedItems;
-  }, [type, unverified, verified]);
+  }, [type, unverified, verified, data]);
 
   return (
     <div>

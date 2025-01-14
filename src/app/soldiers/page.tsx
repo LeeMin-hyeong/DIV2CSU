@@ -92,7 +92,7 @@ export default function MyProfilePage({
       return '권한 변경 권한이 없습니다';
     }
     return null;
-  }, [isViewingMine, current?.permissions]);
+  }, [isViewingMine, current]);
 
   const handleResetPassword = useCallback(() => {
     if (isViewingMine) {

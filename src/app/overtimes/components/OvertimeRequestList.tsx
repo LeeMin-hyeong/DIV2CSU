@@ -9,7 +9,7 @@ type OvertimeRequestListProps = {
 };
 
 export function OvertimeRequestList({ type, data }: OvertimeRequestListProps) {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className='py-5 my-5'>
         <Empty

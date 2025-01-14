@@ -8,7 +8,7 @@ export function OvertimeHistoryList({
   data,
   type,
 }: OvertimeHistoryListProps) {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className='py-5 my-5'>
         <Empty
