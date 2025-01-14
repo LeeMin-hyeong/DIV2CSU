@@ -1,6 +1,6 @@
 'use client';
 
-import { fetchOvertime, verifyOvertime } from '@/app/actions';
+import { approveOvertime, fetchOvertime, verifyOvertime } from '@/app/actions';
 import {
   ArrowRightOutlined,
   CheckOutlined,
@@ -26,9 +26,10 @@ import {
 
 export type OvertimeRequestCardProps = {
   overtimeId: string;
+  type: 'verify'|'approve'
 };
 
-export function OvertimeRequestCard({ overtimeId }: OvertimeRequestCardProps) {
+export function OvertimeRequestCard({ overtimeId, type }: OvertimeRequestCardProps) {
   const router = useRouter();
   const [overtime, setOvertime] = useState<
     Awaited<ReturnType<typeof fetchOvertime>> | undefined
@@ -46,7 +47,8 @@ export function OvertimeRequestCard({ overtimeId }: OvertimeRequestCardProps) {
       }
       if (value) {
         setLoading(true);
-        return verifyOvertime(overtimeId, value)
+        const confirmFunction = type === 'verify' ? verifyOvertime : approveOvertime;
+        return confirmFunction(overtimeId, value)
           .then(({ message: newMessage }) => {
             if (newMessage) {
               return message.error(newMessage);
@@ -70,7 +72,8 @@ export function OvertimeRequestCard({ overtimeId }: OvertimeRequestCardProps) {
       return setRejectError('반려 사유를 입력해주세요');
     }
     setLoading(true);
-    verifyOvertime(overtimeId, false, rejectReason)
+    const rejectFunction = type === 'verify' ? verifyOvertime : approveOvertime;
+    rejectFunction(overtimeId, false, rejectReason)
       .then(({ message: newMessage }) => {
         if (newMessage) {
           return message.error(newMessage);

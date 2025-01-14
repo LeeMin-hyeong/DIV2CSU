@@ -27,26 +27,21 @@ export async function listOvertimes(sn: string, page: number = 0) {
     .selectFrom('overtimes')
     .where(type === 'enlisted' ? 'receiver_id' : 'giver_id', '=', sn);
 
-  const [data, { count }, usedOvertimes] = await Promise.all([
+  const [data, usedOvertimes] = await Promise.all([
     query
       .orderBy('created_at desc')
-      .select(['id'])
-      .limit(20)
-      .offset(Math.min(0, page) * 20)
+      .select(['id', 'verified_at', 'approved_at'])
       .execute(),
-    query
-      .select((eb) => eb.fn.count<string>('id').as('count'))
-      .executeTakeFirstOrThrow(),
     type === 'enlisted' &&
       kysely
         .selectFrom('used_overtimes')
         .where('user_id', '=', sn)
         .leftJoin('soldiers', 'soldiers.sn', 'used_overtimes.recorded_by')
-        .select('soldiers.name as recorded_by')
+        .select('soldiers.name as recorder')
         .selectAll(['used_overtimes'])
         .execute(),
   ]);
-  return { data, count: parseInt(count, 10), usedOvertimes: usedOvertimes || null };
+  return { data, usedOvertimes: usedOvertimes || null };
 }
 
 export async function fetchPendingOvertimes() {
