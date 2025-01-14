@@ -21,6 +21,7 @@ export function UsedPointsList({
         label: `상점 사용 내역 (${data.length})`,
         children: data.map((p) => (
           <Card
+          key={p.id}
           size='small'
           style={{ background: '#fac878' }}
           title={

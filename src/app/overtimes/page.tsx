@@ -1,7 +1,7 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { Divider, FloatButton } from 'antd';
-import { currentSoldier, fetchSoldier, listOvertimes} from '../actions';
+import { currentSoldier, fetchApproveOvertimes, fetchOvertime, fetchPendingOvertimes, fetchSoldier, listOvertimes} from '../actions';
 import { hasPermission } from '../actions/utils';
 import {
   OvertimeRequestList,
@@ -41,13 +41,13 @@ async function NcoPage({
   showRequest: boolean;
 }) {
   const { data } = await listOvertimes(user?.sn, page);
-
+  const request = await fetchPendingOvertimes();
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
-            <OvertimeRequestList type={'verify'}/>
+            <OvertimeRequestList type={'verify'} data={request}/>
             <Divider />
           </>
         )}
@@ -70,19 +70,20 @@ async function ApproverPage({
   showRequest: boolean;
 }) {
   const { data } = await listOvertimes(user?.sn, page);
-
+  const verify = await fetchPendingOvertimes();
+  const approve = await fetchApproveOvertimes();
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
         {showRequest && (
           <>
-            <OvertimeRequestList type={'approve'}/>
+            <OvertimeRequestList type={'approve'} data={approve}/>
             <Divider />
           </>
         )}
         {showRequest && (
           <>
-            <OvertimeRequestList type={'verify'}/>
+            <OvertimeRequestList type={'verify'} data={verify}/>
             <Divider />
           </>
         )}
