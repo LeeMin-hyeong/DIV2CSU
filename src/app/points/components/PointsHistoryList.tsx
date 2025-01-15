@@ -1,13 +1,37 @@
-import { Empty } from 'antd';
+import { Collapse, ConfigProvider, Empty } from 'antd';
 import { PointCard } from './PointCard';
+import { useMemo } from 'react';
 
-export type PointsHistoryListProps = { type: string; data: { id: string }[] };
+export type PointsHistoryListProps = { 
+  type: 'enlisted' | 'nco'; 
+  data: { id: string; verified_at: Date | null }[]; 
+};
 
-export async function PointsHistoryList({
-  data,
-  type,
-}: PointsHistoryListProps) {
-  if (data.length === 0) {
+export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
+  const unverified = data?.filter((d) => d.verified_at === null) || [];
+  const verified = data?.filter((d) => d.verified_at !== null) || [];
+
+  const items = useMemo(() => {
+    const enlistedItems = [];
+
+    if (type === 'enlisted') {
+      enlistedItems.push({
+        key: 'unverified',
+        label: `상벌점 요청 내역 (${unverified.length})`,
+        children: unverified.map((d) => <PointCard key={d.id} pointId={d.id} />),
+      });
+    }
+
+    enlistedItems.push({
+      key: 'verified',
+      label: `상벌점 ${type === 'nco' ? '승인' : ''} 내역 (${verified.length})`,
+      children: verified.map((d) => <PointCard key={d.id} pointId={d.id} />),
+    });
+
+    return enlistedItems;
+  }, [type, unverified, verified]);
+
+  if (!data || data.length === 0) {
     return (
       <div className='py-5 my-5'>
         <Empty
@@ -22,10 +46,25 @@ export async function PointsHistoryList({
       </div>
     );
   }
-  return data.map(({ id }) => (
-    <PointCard
-      key={id}
-      pointId={id}
-    />
-  ));
+
+  return (
+    <div>
+      <ConfigProvider
+        theme={{
+          components: {
+            Collapse: {
+              headerBg: '#ffffff',
+              contentPadding: '0px 0px',
+              contentBg: 'rgba(0, 0, 0, 0)',
+            },
+          },
+        }}
+      >
+        <Collapse
+          items={items}
+          defaultActiveKey={type === 'enlisted' ? ['unverified'] : ['verified']}
+        />
+      </ConfigProvider>
+    </div>
+  );
 }

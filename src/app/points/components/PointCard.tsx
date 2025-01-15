@@ -28,7 +28,7 @@ export function PointCard({ pointId }: PointCardProps) {
         message.error(newMessage);
       }
     });
-  }, [pointId]);
+  }, [pointId, router]);
 
   useLayoutEffect(() => {
     fetchPoint(pointId).then((data) => {

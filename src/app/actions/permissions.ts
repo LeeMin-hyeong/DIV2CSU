@@ -4,6 +4,7 @@ import { Permission } from '@/interfaces';
 import { kysely } from './kysely';
 import { currentSoldier, fetchSoldier } from './soldiers';
 import { hasPermission } from './utils';
+import _ from 'lodash';
 
 export async function updatePermissions({
   sn,
@@ -17,6 +18,9 @@ export async function updatePermissions({
     return { message: '본인 정보는 수정할 수 없습니다' };
   }
   const target = await fetchSoldier(sn);
+  if (_.isEqual(target.permissions, permissions)){
+    return { message: null}
+  }
   if (hasPermission(target.permissions, ['Admin'])) {
     return { message: '관리자는 수정할 수 없습니다' };
   }

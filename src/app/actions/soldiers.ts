@@ -341,3 +341,30 @@ export async function deleteSoldier({
     .executeTakeFirstOrThrow();
   return { message: null };
 }
+
+export async function updateUnit({sn, unit}: {sn: string, unit: 'headquarters' | 'supply' | 'medical' | 'transport' | null}){
+  const current = await currentSoldier();
+  if (sn === current.sn) {
+    return { message: '본인 정보는 수정할 수 없습니다' };
+  }
+  const target = await fetchSoldier(sn);
+  if (target.unit === unit){
+    return { message: null };
+  }
+  if (hasPermission(target.permissions, ['Admin'])) {
+    return { message: '관리자는 수정할 수 없습니다' };
+  }
+  if (!hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
+    return { message: '소속 수정 권한이 없습니다' };
+  }
+  try {
+    await kysely
+    .updateTable('soldiers')
+    .where('sn', '=', sn)
+    .set({ unit: unit })
+    .executeTakeFirstOrThrow();
+    return { message: null };
+  } catch (e) {
+    return { message: '소속 변경에 실패하였습니다' };
+  }
+}

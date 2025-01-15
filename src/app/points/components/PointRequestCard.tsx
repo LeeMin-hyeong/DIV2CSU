@@ -62,7 +62,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
         setModalShown(true);
       }
     },
-    [pointId, success],
+    [pointId, success, router],
   );
 
   const handleReject = useCallback(() => {
@@ -84,7 +84,7 @@ export function PointRequestCard({ pointId }: PointRequestCardProps) {
         setLoading(false);
         router.refresh();
       });
-  }, [pointId, rejectReason]);
+  }, [pointId, rejectReason, router]);
 
   useLayoutEffect(() => {
     fetchPoint(pointId).then((data) => {

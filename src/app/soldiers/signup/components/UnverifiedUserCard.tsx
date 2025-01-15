@@ -49,7 +49,7 @@ export function UnverifiedUserCard({
       }
       setLoading(false);
     },
-    [sn, message],
+    [sn, message, router],
   );
   
   //반려되지 않은 유저일 경우 반환

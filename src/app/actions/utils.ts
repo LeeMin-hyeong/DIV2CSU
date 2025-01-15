@@ -7,4 +7,3 @@ export function hasPermission(
 ) {
   return !!_.intersection(requires, permissions).length;
 }
-

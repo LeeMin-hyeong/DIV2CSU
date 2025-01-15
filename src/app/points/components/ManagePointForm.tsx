@@ -208,6 +208,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
               const selectedOption = commanderOptions.find((t) => t.sn === value);
               setCommander(selectedOption ? selectedOption.name : '');
             }}
+            getPopupContainer={c => c.parentElement}
             onSearch={debouncedSearch.commander}
           >
             <Input.Search loading={searching} />

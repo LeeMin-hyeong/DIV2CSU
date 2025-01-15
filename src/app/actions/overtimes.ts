@@ -27,26 +27,21 @@ export async function listOvertimes(sn: string, page: number = 0) {
     .selectFrom('overtimes')
     .where(type === 'enlisted' ? 'receiver_id' : 'giver_id', '=', sn);
 
-  const [data, { count }, usedOvertimes] = await Promise.all([
+  const [data, usedOvertimes] = await Promise.all([
     query
       .orderBy('created_at desc')
-      .select(['id'])
-      .limit(20)
-      .offset(Math.min(0, page) * 20)
+      .select(['id', 'verified_at', 'approved_at'])
       .execute(),
-    query
-      .select((eb) => eb.fn.count<string>('id').as('count'))
-      .executeTakeFirstOrThrow(),
     type === 'enlisted' &&
       kysely
         .selectFrom('used_overtimes')
         .where('user_id', '=', sn)
         .leftJoin('soldiers', 'soldiers.sn', 'used_overtimes.recorded_by')
-        .select('soldiers.name as recorded_by')
+        .select('soldiers.name as recorder')
         .selectAll(['used_overtimes'])
         .execute(),
   ]);
-  return { data, count: parseInt(count, 10), usedOvertimes: usedOvertimes || null };
+  return { data, usedOvertimes: usedOvertimes || null };
 }
 
 export async function fetchPendingOvertimes() {
@@ -227,7 +222,6 @@ export async function approveOvertime(
   }
 }
 
-// 초과근무: 분 단위, 초과근무 사용: 일 단위
 export async function fetchOvertimeSummary(sn: string) {
   const overtimesQuery = kysely.selectFrom('overtimes').where('receiver_id', '=', sn);
   const usedOvertimesQuery = kysely
@@ -258,21 +252,16 @@ export async function createOvertime({
   giverId,
   approverId,
   reason,
-  startedDate,
-  startedTime,
-  endedDate,
-  endedTime,
+  startedAt,
+  endedAt,
+  value,
 }: {
-  value:       number;
-  giverId?:    string | null;
-  receiverId?: string | null;
-  approverId?: string;
-  reason:      string;
-  givenAt:     Date;
-  startedDate: Date;
-  startedTime: Date;
-  endedDate:   Date;
-  endedTime:   Date;
+  giverId:    string;
+  approverId: string;
+  reason:     string;
+  startedAt:  string; // format: YYYY-MM-DD HH:mm
+  endedAt:    string; // format: YYYY-MM-DD HH:mm
+  value:      number; // minutes
 }) {
   if (reason.trim() === '') {
     return { message: '초과근무 내용을 작성해주세요' };
@@ -295,23 +284,6 @@ export async function createOvertime({
   if (giverId === sn) {
     return { message: '스스로에게 수여할 수 없습니다' };
   }
-  const startedDateTime = new Date(
-    new Date(startedDate).getFullYear(),
-    new Date(startedDate).getMonth(),
-    new Date(startedDate).getDate(),
-    new Date(startedTime).getHours()+9,
-    new Date(startedTime).getMinutes()
-  );
-  const endedDateTime = new Date(
-    new Date(endedDate).getFullYear(),
-    new Date(endedDate).getMonth(),
-    new Date(endedDate).getDate(),
-    new Date(endedTime).getHours()+9,
-    new Date(endedTime).getMinutes()
-  );
-  const duration  = Math.floor((endedDateTime.valueOf() - startedDateTime.valueOf())/60000);
-  const startedAt = startedDateTime.toISOString();
-  const endedAt   = endedDateTime.toISOString();
   try {
     await kysely
       .insertInto('overtimes')
@@ -320,7 +292,7 @@ export async function createOvertime({
         giver_id:    giverId!,
         approver_id: approverId!,
         reason:      reason,
-        value:       duration,
+        value:       value,
         verified_at: null,
         started_at:  startedAt,
         ended_at:    endedAt,
@@ -342,7 +314,7 @@ export async function redeemOvertime({
   reason: string;
 }) {
   if (reason.trim() === '') {
-    return { message: '상벌점 사용 이유를 작성해주세요' };
+    return { message: '초과근무 사용 이유를 작성해주세요' };
   }
   if (value !== Math.round(value)) {
     return { message: '휴가일수는 정수여야 합니다' };
@@ -390,7 +362,7 @@ export async function redeemOvertime({
         )
         .executeTakeFirstOrThrow(),
     ]);
-    if (parseInt(total, 10) - parseInt(used_overtimes, 10)*1440 < value*1440) {
+    if (parseInt(total, 10) - parseInt(used_overtimes, 10) < value*60) {
       return { message: '초과근무 시간이 부족합니다' };
     }
     await kysely

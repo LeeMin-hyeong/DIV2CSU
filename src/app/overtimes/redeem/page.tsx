@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  currentSoldier,
   fetchOvertimeSummary,
   fetchSoldier,
   redeemOvertime,
@@ -19,7 +18,7 @@ import {
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { debounce } from 'lodash';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { checkIfNco } from './actions';
 
@@ -70,7 +69,7 @@ export default function UsePointFormPage() {
       setLoading(true);
       redeemOvertime({
         ...newForm,
-        value: newForm.value,
+        value: newForm.value*60,
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
@@ -124,7 +123,7 @@ export default function UsePointFormPage() {
             }))}
             onChange={async (value: string) => {
               const { overtime, usedOvertime } = await fetchOvertimeSummary(value);
-              setAvailableOvertimes(Math.floor((overtime - usedOvertime*1440)/1440));
+              setAvailableOvertimes(Math.floor((overtime - usedOvertime)/60));
               await fetchSoldier(value).then((soldier) => setTarget(soldier.name))
             }}
             onSearch={debouncedSearch}
@@ -134,17 +133,40 @@ export default function UsePointFormPage() {
         </Form.Item>
         <Form.Item<number>
           name='value'
-          rules={[{ required: true, message: '휴가 일수를 입력해주세요' }]}
+          rules={[
+            { required: true, message: '사용할 초과근무 시간을 입력해주세요' },
+            {
+              validator: (_, value) => {
+                if (value != null && availableOvertimes != null && value > availableOvertimes) {
+                  return Promise.reject(new Error('입력 값이 사용 가능한 초과근무 시간을 초과했습니다.'));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
-          <InputNumber
+          <InputNumber<number>
             min={1}
             controls
             addonAfter={
-              availableOvertimes != null ? `/ ${availableOvertimes}일` : '일'
+              availableOvertimes != null ? `/ ${availableOvertimes}시간` : '시간'
             }
             type='number'
             inputMode='numeric'
-            onChange={(day) => form.setFieldValue('reason', day ? `초과근무 위로휴가 ${day}일 발급` : null)}
+            onChange={(value) => {
+              if(value != null && value == 8){
+                form.setFieldValue('reason', '외출 사용')
+              }
+              else if(value != null && value == 16){
+                form.setFieldValue('reason', '외박 사용')
+              }
+              else if(value != null && value % 24 == 0){
+                form.setFieldValue('reason', `위로 휴가 ${Math.floor(value/24)}일 사용`)
+              }
+              else{
+                form.setFieldValue('reason', null)
+              }
+            }}
           />
         </Form.Item>
         <Form.Item<string>
@@ -153,7 +175,6 @@ export default function UsePointFormPage() {
         >
           <Input.TextArea
             showCount
-            // disabled
             maxLength={500}
             placeholder='초과근무 사용 이유'
             style={{ height: 150 }}

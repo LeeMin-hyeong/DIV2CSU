@@ -1,16 +1,12 @@
 'use client';
 
 import { GroupSoldiers, listSoldiers } from '@/app/actions';
-import { Card, Collapse, ConfigProvider, Input, Skeleton } from 'antd';
+import {  Collapse, ConfigProvider, Empty, Input } from 'antd';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { UserCard } from './components';
 
-export default function ManageSoldiersPage({
-  searchParams,
-}: {
-  searchParams: { page?: string };
-}) {
+export default function ManageSoldiersPage() {
   const [data, setData] = useState<
     Awaited<ReturnType<typeof listSoldiers>> | null
   >(null);
@@ -20,37 +16,32 @@ export default function ManageSoldiersPage({
   >(null);
   const [query, setQuery] = useState<string>('');
 
-  // Debounced function to update query
   const updateQuery = useCallback(
     debounce((value: string) => {
       setQuery(value);
-    }, 300), // 300ms delay
+    }, 300),
     []
   );
 
-  const onChangeQuery: React.ChangeEventHandler<HTMLInputElement> = useCallback(
-    (event) => {
-      updateQuery(event.target.value);
-    },
-    [updateQuery]
-  );
+  const onChangeQuery: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    updateQuery(event.target.value);
+  };
 
   useEffect(() => {
     if (query !== '') {
       listSoldiers({ query }).then((data) => {
         setData(data);
-        setGroupedData(null); // Clear grouped data
+        setGroupedData(null);
       });
     } else {
       GroupSoldiers().then((group) => {
         setGroupedData(group);
-        setData(null); // Clear regular data
+        setData(null);
       });
     }
   }, [query]);
 
   useEffect(() => {
-    // Cleanup debounce on unmount
     return () => {
       updateQuery.cancel();
     };
@@ -90,31 +81,28 @@ export default function ManageSoldiersPage({
   return (
     <div className='flex flex-1 flex-col'>
       <Input placeholder='검색' onChange={onChangeQuery} />
-      {data == null && groupedData == null &&
-        Array(10)
-          .fill(0)
-          .map((_, i) => (
-            <Card key={`skeleton.${i}`}>
-              <Skeleton paragraph={{ rows: 0 }} />
-            </Card>
-          ))}
+      {data?.length == 0 && groupedData == null &&
+        <div className="py-5 my-5">
+          <Empty description={<p>해당 사용자가 존재하지 않습니다</p>} />
+        </div>}
       {data?.map((d) => (
         <UserCard key={d.sn} {...d} />
-      ))
-      }
-      {groupedData && <ConfigProvider
-        theme={{
-          components: {
-            Collapse: {
-              headerBg: '#ffffff',
-              contentPadding: '0px 0px',
-              contentBg: 'rgba(0, 0, 0, 0.02)'
+      ))}
+      {groupedData && (
+        <ConfigProvider
+          theme={{
+            components: {
+              Collapse: {
+                headerBg: '#ffffff',
+                contentPadding: '0px 0px',
+                contentBg: 'rgba(0, 0, 0, 0)',
+              },
             },
-          },
-        }}
+          }}
         >
-        <Collapse items={items} />
-      </ConfigProvider>}
+          <Collapse items={items} />
+        </ConfigProvider>
+      )}
     </div>
   );
 }

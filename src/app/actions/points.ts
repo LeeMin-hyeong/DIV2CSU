@@ -17,7 +17,7 @@ export async function fetchPoint(pointId: string) {
     .executeTakeFirst();
 }
 
-export async function listPoints(sn: string, page: number = 0) {
+export async function listPoints(sn: string) {
   const { type } = await kysely
     .selectFrom('soldiers')
     .where('sn', '=', sn)
@@ -27,26 +27,21 @@ export async function listPoints(sn: string, page: number = 0) {
     .selectFrom('points')
     .where(type === 'enlisted' ? 'receiver_id' : 'giver_id', '=', sn);
 
-  const [data, { count }, usedPoints] = await Promise.all([
+  const [data, usedPoints] = await Promise.all([
     query
       .orderBy('created_at desc')
-      .select(['id'])
-      .limit(20)
-      .offset(Math.max(0, page-1) * 20)
+      .select(['id', 'verified_at'])
       .execute(),
-    query
-      .select((eb) => eb.fn.count<string>('id').as('count'))
-      .executeTakeFirstOrThrow(),
     type === 'enlisted' &&
       kysely
         .selectFrom('used_points')
         .where('user_id', '=', sn)
         .leftJoin('soldiers', 'soldiers.sn', 'used_points.recorded_by')
-        .select('soldiers.name as recorded_by')
+        .select('soldiers.name as recorder')
         .selectAll(['used_points'])
         .execute(),
   ]);
-  return { data, count: parseInt(count, 10), usedPoints: usedPoints || null };
+  return { data, usedPoints: usedPoints || null };
 }
 
 export async function fetchPendingPoints() {
