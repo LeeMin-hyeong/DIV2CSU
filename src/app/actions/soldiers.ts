@@ -250,6 +250,35 @@ export async function searchCommander(query: string) {
     .execute();
 }
 
+export async function searchTargetCommander(sn: string = '') {
+  const soldier = sn === '' ? await currentSoldier() : await fetchSoldier(sn);
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb('type', '=', 'nco'),
+        eb('unit', '=', soldier.unit),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
+        ]),
+        eb.exists(
+          eb
+            .selectFrom('permissions')
+            .whereRef('permissions.soldiers_id', '=', 'soldiers.sn')
+            .having('value', 'in', [
+              'Commander',
+              'Admin',
+            ])
+            .select('permissions.value')
+            .groupBy('permissions.value'),
+        ),
+      ]),
+    )
+    .select(['sn', 'name'])
+    .execute();
+}
+
 export async function searchApprover(query: string = '') {
   const current = await currentSoldier();
   return kysely

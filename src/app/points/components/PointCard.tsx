@@ -40,13 +40,19 @@ export function PointCard({ pointId }: PointCardProps) {
     if (point == null) {
       return undefined;
     }
+    if (point.approved_at) {
+      if (point.value < 0) {
+        return '#ff4a4a'
+      }
+      return '#98e39a'
+    }
     if (point.verified_at) {
       if (point.value < 0) {
         return '#ed8429';
       }
       return '#A7C0FF';
     }
-    if (point.rejected_at || point.rejected_reason) {
+    if (point.rejected_at || point.rejected_reason || point.disapproved_at || point.disapproved_reason) {
       return '#ED2939';
     }
     return '#D9D9D9';
@@ -65,6 +71,8 @@ export function PointCard({ pointId }: PointCardProps) {
               <p>{point.giver}</p>
               <ArrowRightOutlined className='mx-2' />
               <p>{point.receiver}</p>
+              <p className='mx-2' />
+              <p>(승인자 : {point.commander})</p>
             </div>
             <p>{`${point?.value ?? 0}점`}</p>
           </div>
@@ -88,7 +96,7 @@ export function PointCard({ pointId }: PointCardProps) {
             </p>
             <p>{point?.reason}</p>
           </div>
-          {point?.verified_at ? null : (
+          {point?.approved_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'

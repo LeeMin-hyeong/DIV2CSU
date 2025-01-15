@@ -4,6 +4,8 @@ import {
   createPoint,
   searchEnlisted,
   searchNco,
+  searchCommander,
+  searchTargetCommander,
 } from '@/app/actions';
 import {
   App,
@@ -30,12 +32,16 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [soldierQuery, setSoldierQuery] = useState('');
+  const [commanderQuery, setCommanderQuery] = useState('');
+  const [soldierOptions, setSoldierOptions] = useState<{ name: string; sn: string }[]>([]);
+  const [commanderOptions, setCommanderOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
   const [target, setTarget] = useState('')
+  const [targetSn, setTargetSn] = useState('')
+  const [commander, setCommander] = useState('')
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -53,28 +59,30 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     }
   }, [type]);
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((value: string) => {
-        setQuery(value);
-      }, 300),
-    [],
-  );
-
-  const handleSearch = (value: string) => {
-    debouncedSearch(value);
-  };
+  const debouncedSearch = useMemo(() => ({
+    soldier: debounce((value) => setSoldierQuery(value), 300),
+    commander: debounce((value) => setCommanderQuery(value), 300),
+  }), []);
 
   useEffect(() => {
     setSearching(true);
     const searchFn =
       type === 'request' ? searchNco : searchEnlisted;
 
-    searchFn(query).then((value) => {
+    searchFn(soldierQuery).then((value) => {
       setSearching(false);
-      setOptions(value);
+      setSoldierOptions(value);
     });
-  }, [query, type]);
+  }, [soldierQuery, type]);
+
+  useEffect(() => {
+    setSearching(true);
+    searchCommander(commanderQuery || '').then((value) => {
+      setSearching(false);
+      setCommanderOptions(value as any);
+    });
+
+  }, [commanderQuery]);
 
   const handleSubmit = useCallback(
     async (newForm: any) => {
@@ -103,6 +111,31 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     },
     [router, merit, form, message, type],
   );
+
+  useEffect(() => {
+    if(type === 'request'){
+      searchTargetCommander().then((value) => {
+        if (value.length === 1) {
+          form.setFieldsValue({ commanderId: value[0].sn });
+          setCommander(value[0].name);
+        }
+      });
+    }
+  }, [form, type]);
+
+  useEffect(() => {
+    if(type === 'give' && targetSn !== ''){
+      searchTargetCommander(targetSn).then((value) => {
+        if (value.length === 1) {
+          form.setFieldsValue({ commanderId: value[0].sn });
+          setCommander(value[0].name);
+        } else {
+          form.setFieldsValue({ commanderId: ''});
+          setCommander('');
+        }
+      });
+    }
+  }, [targetSn, type]);
 
   return (
     <div className='px-4'>
@@ -144,21 +177,39 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           ]}
         >
           <AutoComplete
-            onSearch={handleSearch} // Debounced search handler
-            options={options.map((t) => ({
+            options={soldierOptions.map((t) => ({
+              value: t.sn,
+              label: renderPlaceholder(t),
+            }))}
+            onSearch={debouncedSearch.soldier}
+            onChange={(value) => {
+              setTargetSn(value);
+              const selectedOption = soldierOptions.find((t) => t.sn === value);
+              setTarget(selectedOption ? selectedOption.name : '');
+            }}
+          >
+            <Input.Search loading={searching} />
+          </AutoComplete>
+        </Form.Item>
+        <Form.Item<string>
+          label={commander !== '' ? `승인자: ${commander}` : '승인자'}
+          name='commanderId'
+          rules={[
+            { required: true, message: '승인자를 입력해주세요' },
+            { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
+          ]}
+        >
+          <AutoComplete
+            options={commanderOptions.map((t) => ({
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
             onChange={(value) => {
-              const selectedOption = options.find((t) => t.sn === value);
-              if (selectedOption) {
-                setTarget(selectedOption.name); // 선택된 sn에 대응하는 name 설정
-              }
-              else {
-                setTarget('')
-              }
+              const selectedOption = commanderOptions.find((t) => t.sn === value);
+              setCommander(selectedOption ? selectedOption.name : '');
             }}
             getPopupContainer={c => c.parentElement}
+            onSearch={debouncedSearch.commander}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

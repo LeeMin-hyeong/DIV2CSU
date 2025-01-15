@@ -33,16 +33,33 @@ model permissions {
 }
 
 model points {
-  id              Int       @id @default(autoincrement())
-  giver_id        String    @db.VarChar(11)
-  receiver_id     String    @db.VarChar(11)
-  created_at      DateTime  @default(now()) @db.Timestamp(0)
-  verified_at     DateTime? @db.Timestamp(0)
-  value           Int       @db.SmallInt
-  reason          String?   @db.VarChar(1000)
-  given_at        DateTime  @db.Timestamp(0)
-  rejected_at     DateTime? @db.Timestamp(0)
-  rejected_reason String?   @db.VarChar(1000)
+  id                 Int       @id @default(autoincrement())
+  // 상벌점 부여한 간부 군번
+  giver_id           String    @db.VarChar(11)
+  // 상벌점 받은 용사 군번
+  receiver_id        String    @db.VarChar(11)
+  // 최종 승인 지휘관 군번
+  commander_id       String    @db.VarChar(11)
+  // 상벌점 요청/부여한 날짜
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  // 상벌점 승인난 날짜
+  verified_at        DateTime? @db.Timestamp(0)
+  // 상벌점 (예: 5점, -5점)
+  value              Int       @db.SmallInt
+  // 상벌점 부여 이유
+  reason             String?   @db.VarChar(1000)
+  // 실제 상벌점 부여한 날짜
+  given_at           DateTime  @db.Timestamp(0)
+  // 상벌점 반려된 날짜 (null일 경우 반려 안됨)
+  rejected_at        DateTime? @db.Timestamp(0)
+  // 최종 승인된 날짜
+  approved_at        DateTime? @db.Timestamp(0)
+  // 승인 반려 날짜
+  disapproved_at     DateTime? @db.Timestamp(0)
+  // 수여 반려 이유
+  rejected_reason    String?   @db.VarChar(1000)
+  // 승인 반려 이유
+  disapproved_reason String?   @db.VarChar(1000)
 }
 
 model point_templates {
