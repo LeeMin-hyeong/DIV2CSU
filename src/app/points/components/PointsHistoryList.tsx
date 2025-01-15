@@ -2,30 +2,16 @@ import { Collapse, ConfigProvider, Empty } from 'antd';
 import { PointCard } from './PointCard';
 import { useMemo } from 'react';
 
-export type PointsHistoryListProps = { type: 'enlisted' | 'nco'; data: { id: string, verified_at: Date | null }[] };
+export type PointsHistoryListProps = { 
+  type: 'enlisted' | 'nco'; 
+  data: { id: string; verified_at: Date | null }[]; 
+};
 
 export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className='py-5 my-5'>
-        <Empty
-          description={
-            <p>
-              {type === 'enlisted'
-                ? '받은 상벌점이 없습니다'
-                : '부여한 상벌점이 없습니다'}
-            </p>
-          }
-        />
-      </div>
-    );
-  }
-
-  const unverified = data.filter((d) => d.verified_at === null);
-  const verified = data.filter((d) => d.verified_at !== null);
+  const unverified = data?.filter((d) => d.verified_at === null) || [];
+  const verified = data?.filter((d) => d.verified_at !== null) || [];
 
   const items = useMemo(() => {
-    if (!data) return [];
     const enlistedItems = [];
 
     if (type === 'enlisted') {
@@ -43,7 +29,23 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
     });
 
     return enlistedItems;
-  }, [type, unverified, verified, data]);
+  }, [type, unverified, verified]);
+
+  if (!data || data.length === 0) {
+    return (
+      <div className='py-5 my-5'>
+        <Empty
+          description={
+            <p>
+              {type === 'enlisted'
+                ? '받은 상벌점이 없습니다'
+                : '부여한 상벌점이 없습니다'}
+            </p>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div>

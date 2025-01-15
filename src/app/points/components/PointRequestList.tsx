@@ -8,16 +8,8 @@ type PointRequestListProps = {
 };
 
 export function PointRequestList({ data }: PointRequestListProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className='py-5 my-5'>
-        <Empty description={<p>상벌점 승인 요청이 없습니다</p>} />
-      </div>
-    );
-  }
-
   const items = useMemo(() => {
-    if (!data) return [];
+    if (!data || data.length === 0) return [];
     return [
       {
         key: 'requested',
@@ -26,6 +18,14 @@ export function PointRequestList({ data }: PointRequestListProps) {
       },
     ];
   }, [data]);
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="py-5 my-5">
+        <Empty description={<p>상벌점 승인 요청이 없습니다</p>} />
+      </div>
+    );
+  }
 
   return (
     <div>
