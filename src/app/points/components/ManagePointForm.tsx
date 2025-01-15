@@ -158,6 +158,7 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
                 setTarget('')
               }
             }}
+            getPopupContainer={c => c.parentElement}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

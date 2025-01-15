@@ -8,7 +8,6 @@ import {
   FloatButton,
   Input,
   Popconfirm,
-  Radio,
   Select,
   Spin,
   message,
@@ -22,73 +21,78 @@ import {
   hasPermission,
   resetPasswordForce,
   updatePermissions,
+  updateUnit,
 } from '../actions';
 import {
   HelpModal,
   PasswordForm,
   PasswordModal,
   PermissionsTransfer,
+  UnitTransfer,
 } from './components';
-import { useRouter } from 'next/navigation';
 
 export default function MyProfilePage({
   searchParams: { sn },
 }: {
   searchParams: { sn: string };
 }) {
-  const [mySoldier, setMySoldier] = useState<Omit<Soldier, 'password'> | null>(
-    null,
-  );
-  const [targetSoldier, setTargetSoldier] = useState<Omit<
-    Soldier,
-    'password'
-  > | null>(null);
-  const data = targetSoldier ?? mySoldier;
-  const isViewingMine =
-    targetSoldier == null || mySoldier?.sn === targetSoldier.sn;
+  const [current, setCurrent] = useState<Omit<Soldier, 'password'> | null>(null);
+  const [targetSoldier, setTargetSoldier] = useState<Omit<Soldier,'password'> | null>(null);
+  const viewingSoldier = targetSoldier ?? current;
+  const isViewingMine = targetSoldier == null || current?.sn === targetSoldier.sn;
   const [helpShown, setHelpShwon] = useState(false);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [newPassword, setNewPassword] = useState<string | null>(null);
-  const router = useRouter();
+  const [unit, setUnit] = useState<'headquarters' | 'supply' | 'medical' | 'transport' | null>(null)
 
   useLayoutEffect(() => {
     Promise.all([currentSoldier(), sn ? fetchSoldier(sn) : null]).then(
       ([newMySoldier, newTargetSoldier]) => {
-        setMySoldier(newMySoldier as any);
-        setPermissions(
-          newTargetSoldier?.permissions ?? newMySoldier.permissions,
-        );
-        setTargetSoldier(newTargetSoldier as any);
+        setCurrent(newMySoldier);
+        setPermissions(newTargetSoldier?.permissions ?? newMySoldier.permissions);
+        setTargetSoldier(newTargetSoldier);
+        setUnit(newTargetSoldier?.unit ?? newMySoldier.unit)
       },
     );
   }, [sn]);
 
-  const handleUpdatePermissions = useCallback(() => {
+  const handleUpdateChanges = useCallback(() => {
     updatePermissions({ sn, permissions }).then(({ message: newMessage }) => {
       if (newMessage != null) {
         message.error(newMessage);
       } else {
         setTargetSoldier(
-          (state) =>
-            ({
-              ...state,
-              permissions: permissions,
-            } as any),
+          (state) => ({
+            ...state,
+            permissions: permissions,
+          } as any),
         );
-        message.success('권한을 성공적으로 변경하였습니다');
       }
     });
-  }, [sn, permissions]);
+    updateUnit({ sn, unit }).then(({ message: newMessage }) => {
+      if (newMessage != null) {
+        message.error(newMessage);
+      } else {
+        setTargetSoldier(
+          (state) => ({
+            ...state,
+            unit: unit,
+          } as any),
+        );
+      }
+    });
+    message.success('정보를 수정하였습니다.')
+  }, [sn, permissions, unit]);
 
   const permissionAlertMessage = useMemo(() => {
     if (isViewingMine) {
       return '본인 권한은 수정할 수 없습니다';
     }
-    if (!hasPermission(mySoldier!.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
+    if (!hasPermission(current!.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
       return '권한 변경 권한이 없습니다';
     }
     return null;
-  }, [isViewingMine, mySoldier?.permissions]);
+  }, [isViewingMine, current]);
 
   const handleResetPassword = useCallback(() => {
     if (isViewingMine) {
@@ -103,7 +107,7 @@ export default function MyProfilePage({
   }, [sn, isViewingMine]);
 
   const handleUserDelete = useCallback(() => {
-    deleteSoldier({ sn, value: data?.deleted_at == null }).then(
+    deleteSoldier({ sn, value: viewingSoldier?.deleted_at == null }).then(
       ({ message: newMessage }) => {
         if (newMessage) {
           message.error(newMessage);
@@ -122,9 +126,9 @@ export default function MyProfilePage({
         });
       },
     );
-  }, [sn, data?.deleted_at]);
+  }, [sn, viewingSoldier?.deleted_at]);
 
-  if (data == null) {
+  if (viewingSoldier == null) {
     return (
       <div className='flex flex-1 min-h-full justify-center items-center'>
         <Spin indicator={<LoadingOutlined spin />} />
@@ -139,7 +143,7 @@ export default function MyProfilePage({
           <span>유형</span>
           <Select
             disabled
-            value={data?.type}
+            value={viewingSoldier?.type}
           >
             <Select.Option value='enlisted'>용사</Select.Option>
             <Select.Option value='nco'>간부</Select.Option>
@@ -149,7 +153,7 @@ export default function MyProfilePage({
         <div>
           <span>군번</span>
           <Input
-            value={data?.sn}
+            value={viewingSoldier?.sn}
             disabled
           />
         </div>
@@ -157,31 +161,36 @@ export default function MyProfilePage({
         <div>
           <span>이름</span>
           <Input
-            value={data?.name}
+            value={viewingSoldier?.name}
             disabled
           />
         </div>
       </div>
-      {(!isViewingMine && hasPermission(mySoldier!?.permissions, ['Admin', 'Commander'])) ? (
-        <div className='my-3'>
+      <UnitTransfer 
+        unit={unit}
+        onchange={(u) => setUnit(u)}
+        disabled={!hasPermission(current!.permissions, ['Admin', 'Commander', 'UserAdmin'])}
+      />
+      {(!isViewingMine && hasPermission(current!?.permissions, ['Admin', 'Commander'])) ? (
+        <div className='pb-2'>
           <Button href={`/points?sn=${targetSoldier.sn}`}>
             상점 내역 보기
           </Button>
         </div>
       ): null}
-      {(!isViewingMine && hasPermission(mySoldier!?.permissions, ['Admin', 'Commander'])) ? (
-        <div className='my-3'>
+      {(!isViewingMine && hasPermission(current!?.permissions, ['Admin', 'Commander'])) ? (
+        <div className='pb-2'>
           <Button href={`/overtimes?sn=${targetSoldier.sn}`}>
             초과근무 내역 보기
           </Button>
         </div>
       ): null}
       {isViewingMine ? <PasswordForm sn={sn} force={false}/> : null}
-      <div className='my-1' />
-      {data?.type !== 'enlisted' && (
+      <div className='' />
+      {viewingSoldier?.type !== 'enlisted' && (
         <>
           <PermissionsTransfer
-            currentUserPermissions={mySoldier?.permissions!}
+            currentUserPermissions={current?.permissions!}
             permissions={permissions as Permission[]}
             onChange={(t) => setPermissions(t)}
           />
@@ -216,31 +225,29 @@ export default function MyProfilePage({
           <>
             <Popconfirm
               title={`${
-                data?.deleted_at == null ? '삭제' : '복원'
+                viewingSoldier?.deleted_at == null ? '삭제' : '복원'
               }하시겠습니까?`}
               cancelText='취소'
-              okText={data?.deleted_at == null ? '삭제' : '복원'}
+              okText={viewingSoldier?.deleted_at == null ? '삭제' : '복원'}
               okType='danger'
               onConfirm={handleUserDelete}
             >
               <Button danger>
-                {data?.deleted_at == null ? '삭제' : '복원'}
+                {viewingSoldier?.deleted_at == null ? '삭제' : '복원'}
               </Button>
             </Popconfirm>
             <div className='mx-2' />
           </>
         )}
-        {data?.type === 'nco' && (
-          <Button
-            type='primary'
-            disabled={
-              isViewingMine || _.isEqual(targetSoldier.permissions, permissions)
-            }
-            onClick={handleUpdatePermissions}
-          >
-            저장
-          </Button>
-        )}
+        <Button
+          type='primary'
+          disabled={
+            isViewingMine || (_.isEqual(targetSoldier.permissions, permissions) && _.isEqual(targetSoldier.unit, unit))
+          }
+          onClick={handleUpdateChanges}
+        >
+          저장
+        </Button>
       </div>
       <FloatButton
         icon={<QuestionOutlined />}

@@ -1,7 +1,7 @@
 'use client';
 import { fetchPointSummary } from '@/app/actions';
 import { Soldier } from '@/interfaces';
-import { CheckOutlined, CloseOutlined, DislikeOutlined, FileDoneOutlined, LikeOutlined } from '@ant-design/icons';
+import { CheckOutlined, DislikeOutlined, FileDoneOutlined, LikeOutlined } from '@ant-design/icons';
 import { Card, Row, Skeleton, Statistic } from 'antd';
 import { useLayoutEffect, useState } from 'react';
 

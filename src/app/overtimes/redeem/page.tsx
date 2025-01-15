@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  currentSoldier,
   fetchOvertimeSummary,
   fetchSoldier,
   redeemOvertime,
@@ -19,7 +18,7 @@ import {
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { debounce } from 'lodash';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { checkIfNco } from './actions';
 
@@ -70,7 +69,7 @@ export default function UsePointFormPage() {
       setLoading(true);
       redeemOvertime({
         ...newForm,
-        value: newForm.value,
+        value: newForm.value*60,
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
@@ -176,7 +175,6 @@ export default function UsePointFormPage() {
         >
           <Input.TextArea
             showCount
-            // disabled
             maxLength={500}
             placeholder='초과근무 사용 이유'
             style={{ height: 150 }}
