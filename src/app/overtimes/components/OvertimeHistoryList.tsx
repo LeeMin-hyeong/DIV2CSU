@@ -42,9 +42,9 @@ export function OvertimeHistoryList({
 
     newItems.push(
       {
-        key: 'approved',
+        key: 'rejected',
         label: `초과근무 반려 내역 (${rejected.length})`,
-        children: approved.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} />),
+        children: rejected.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} />),
       },
       {
         key: 'approved',
@@ -87,7 +87,7 @@ export function OvertimeHistoryList({
       >
         <Collapse
           items={items}
-          defaultActiveKey={type === 'enlisted' ? ['unapproved', 'unverified'] : ['verified']}
+          defaultActiveKey={type === 'enlisted' ? ['unapproved', 'unverified', 'rejected'] : ['verified']}
         />
       </ConfigProvider>
     </div>

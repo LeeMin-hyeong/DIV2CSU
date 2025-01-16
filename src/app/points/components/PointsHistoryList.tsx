@@ -70,7 +70,7 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
       >
         <Collapse
           items={items}
-          defaultActiveKey={type === 'enlisted' ? ['unverified'] : ['verified']}
+          defaultActiveKey={type === 'enlisted' ? ['unverified', 'rejected'] : ['verified']}
         />
       </ConfigProvider>
     </div>
