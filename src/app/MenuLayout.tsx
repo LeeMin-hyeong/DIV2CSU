@@ -221,7 +221,7 @@ export function MenuLayout({
               left: 0,
               top: 60,
               bottom: 0,
-              zIndex: 1,
+              zIndex: 2,
             }}
             collapsible
             collapsed={collapsed}
