@@ -30,7 +30,7 @@ export async function listOvertimes(sn: string, page: number = 0) {
   const [data, usedOvertimes] = await Promise.all([
     query
       .orderBy('created_at desc')
-      .select(['id', 'verified_at', 'approved_at'])
+      .select(['id', 'verified_at', 'approved_at', 'rejected_at', 'disapproved_at'])
       .execute(),
     type === 'enlisted' &&
       kysely

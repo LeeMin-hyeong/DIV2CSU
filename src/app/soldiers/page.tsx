@@ -143,7 +143,7 @@ export default function MyProfilePage({
           <span>유형</span>
           <Select
             disabled
-            value={viewingSoldier?.type}
+            value={viewingSoldier?.type ?? 'nco'}
           >
             <Select.Option value='enlisted'>용사</Select.Option>
             <Select.Option value='nco'>간부</Select.Option>
@@ -153,7 +153,7 @@ export default function MyProfilePage({
         <div>
           <span>군번</span>
           <Input
-            value={viewingSoldier?.sn}
+            value={viewingSoldier?.sn || ''}
             disabled
           />
         </div>
@@ -161,7 +161,7 @@ export default function MyProfilePage({
         <div>
           <span>이름</span>
           <Input
-            value={viewingSoldier?.name}
+            value={viewingSoldier?.name || ''}
             disabled
           />
         </div>
