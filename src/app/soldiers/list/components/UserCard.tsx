@@ -7,22 +7,18 @@ export type UserCardProps = {
   sn: string;
   name: string;
   type: string;
-  deleted_at: Date | null;
-  rejected_at: Date | null;
 };
 
-export function UserCard({ type, sn, name, deleted_at, rejected_at }: UserCardProps) {
+export function UserCard({ type, sn, name }: UserCardProps) {
   const [pointData, setPointData] = useState<number | null>(null)
   const [overtimeData, setOvertimeData] = useState<number | null>(null)
 
   useLayoutEffect(() => {
-    fetchPointSummary(sn).then((d) => setPointData(d.merit+d.demerit));
-    fetchOvertimeSummary(sn).then((d) => setOvertimeData(d.overtime));
-  }, [sn]);
-
-  if (deleted_at && rejected_at) {
-    return null; // deleted_at, rejected_at 값이 존재할 경우 카드를 null로 반환하여 숨김
-  }
+    if(type === 'enlisted'){
+      fetchPointSummary(sn).then((d) => setPointData(d.merit+d.demerit));
+      fetchOvertimeSummary(sn).then((d) => setOvertimeData(d.overtime));
+    }
+  }, [type, sn]);
 
   return (
     <Link href={`/soldiers?sn=${sn}`}>
@@ -37,7 +33,7 @@ export function UserCard({ type, sn, name, deleted_at, rejected_at }: UserCardPr
             </p>
           </Row>
           {type === 'enlisted'? <Row className='font-bold'>
-            <p style={{color: '#3f8600'}}>{pointData}점</p>
+            <p style={pointData! < 0 ? {color: '#cf1322'} : {color: '#3f8600'}}>{pointData}점</p>
             <p className='px-1'>{'|'}</p>
             <p style={{color: '#3f8600', width: '70px'}}>{(overtimeData!/60).toFixed(2)}시간</p>
           </Row>

@@ -130,11 +130,9 @@ export async function listSoldiers({ query, type }: { query?: string | null, typ
     .where((eb) =>
       eb.and([
         eb.or([eb('sn', 'like', `%${query}%`), eb('name', 'like', `%${query}%`)]),
-        eb.or([
-          eb('rejected_at', 'is not', null),
-          eb('verified_at', 'is not', null),
-        ]),
-        eb('deleted_at', 'is', null), // 삭제된 유저 제외
+        eb('rejected_at', 'is', null),
+        eb('verified_at', 'is not', null),
+        eb('deleted_at', 'is', null),
         ...(type === 'enlisted' || type === 'nco' ? [eb('type', '=', type)] : []),
       ]),
     )
