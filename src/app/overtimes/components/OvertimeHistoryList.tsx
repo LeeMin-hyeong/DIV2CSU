@@ -54,7 +54,7 @@ export function OvertimeHistoryList({
     );
 
     return newItems;
-  }, [data, type, unverified, approved, unapproved]);
+  }, [data, type, unverified, approved, unapproved, rejected]);
 
   if (!data || data.length === 0) {
     return (

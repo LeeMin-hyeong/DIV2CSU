@@ -12,9 +12,6 @@ export type UserCardProps = {
 };
 
 export function UserCard({ type, sn, name, deleted_at, rejected_at }: UserCardProps) {
-  if (deleted_at && rejected_at) {
-    return null; // deleted_at, rejected_at 값이 존재할 경우 카드를 null로 반환하여 숨김
-  }
   const [pointData, setPointData] = useState<number | null>(null)
   const [overtimeData, setOvertimeData] = useState<number | null>(null)
 
@@ -22,6 +19,10 @@ export function UserCard({ type, sn, name, deleted_at, rejected_at }: UserCardPr
     fetchPointSummary(sn).then((d) => setPointData(d.merit+d.demerit));
     fetchOvertimeSummary(sn).then((d) => setOvertimeData(d.overtime));
   }, [sn]);
+
+  if (deleted_at && rejected_at) {
+    return null; // deleted_at, rejected_at 값이 존재할 경우 카드를 null로 반환하여 숨김
+  }
 
   return (
     <Link href={`/soldiers?sn=${sn}`}>

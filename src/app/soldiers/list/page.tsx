@@ -23,6 +23,13 @@ export default function ManageSoldiersPage() {
     }, 300),
     []
   );
+  
+  useEffect(() => {
+    return () => {
+      updateQuery.cancel();
+    };
+  }, [updateQuery]);
+  
 
   const onChangeQuery: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     updateQuery(event.target.value);

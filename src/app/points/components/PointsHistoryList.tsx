@@ -37,7 +37,7 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
     );
 
     return enlistedItems;
-  }, [type, unverified, verified]);
+  }, [type, unverified, verified, rejected]);
 
   if (!data || data.length === 0) {
     return (
