@@ -1,7 +1,7 @@
 'use client';
 
 import { GroupSoldiers, listSoldiers } from '@/app/actions';
-import {  Collapse, ConfigProvider, Empty, Input } from 'antd';
+import {  Collapse, ConfigProvider, Empty, Input, Select } from 'antd';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { UserCard } from './components';
@@ -15,6 +15,7 @@ export default function ManageSoldiersPage() {
     Awaited<ReturnType<typeof GroupSoldiers>> | null
   >(null);
   const [query, setQuery] = useState<string>('');
+  const [type, setType] = useState<string>('')
 
   const updateQuery = useCallback(
     debounce((value: string) => {
@@ -22,6 +23,13 @@ export default function ManageSoldiersPage() {
     }, 300),
     []
   );
+  
+  useEffect(() => {
+    return () => {
+      updateQuery.cancel();
+    };
+  }, [updateQuery]);
+  
 
   const onChangeQuery: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     updateQuery(event.target.value);
@@ -29,17 +37,17 @@ export default function ManageSoldiersPage() {
 
   useEffect(() => {
     if (query !== '') {
-      listSoldiers({ query }).then((data) => {
+      listSoldiers({ query, type }).then((data) => {
         setData(data);
         setGroupedData(null);
       });
     } else {
-      GroupSoldiers().then((group) => {
+      GroupSoldiers(type).then((group) => {
         setGroupedData(group);
         setData(null);
       });
     }
-  }, [query]);
+  }, [query, type]);
 
   useEffect(() => {
     return () => {
@@ -80,7 +88,19 @@ export default function ManageSoldiersPage() {
 
   return (
     <div className='flex flex-1 flex-col'>
-      <Input placeholder='검색' onChange={onChangeQuery} />
+      <div className='flex flex-row items-center'>
+        <div className='flex flex-col'>
+          <Select style={{width : '80px'}}
+            defaultValue={'all'}
+            onChange={(v) => setType(v)}
+          >
+            <Select.Option value='all'>모두</Select.Option>
+            <Select.Option value='enlisted'>용사</Select.Option>
+            <Select.Option value='nco'>간부</Select.Option>
+          </Select>
+        </div>
+        <Input placeholder='검색' onChange={onChangeQuery} />
+      </div>
       {data?.length == 0 && groupedData == null &&
         <div className="py-5 my-5">
           <Empty description={<p>해당 사용자가 존재하지 않습니다</p>} />

@@ -124,7 +124,7 @@ export async function verifySoldier(sn: string, value: boolean) {
   }
 }
 
-export async function listSoldiers({ query }: { query?: string | null }) {
+export async function listSoldiers({ query, type }: { query?: string | null, type: string }) {
   return kysely
     .selectFrom('soldiers')
     .where((eb) =>
@@ -135,44 +135,48 @@ export async function listSoldiers({ query }: { query?: string | null }) {
           eb('verified_at', 'is not', null),
         ]),
         eb('deleted_at', 'is', null), // 삭제된 유저 제외
+        ...(type === 'enlisted' || type === 'nco' ? [eb('type', '=', type)] : []),
       ]),
     )
     .selectAll()
     .execute();
 }
 
-export async function GroupSoldiers() {
-  const query = kysely
+export async function GroupSoldiers(type: string) {
+  const baseQuery = kysely
     .selectFrom('soldiers')
     .where('rejected_at', 'is', null)
     .where('verified_at', 'is not', null)
     .where('deleted_at', 'is', null);
-    const [ headquarters, supply, medical, transport, unclassified ] = await Promise.all([
-      query
-        .where('unit', '=', 'headquarters')
-        .orderBy('type desc')
-        .selectAll()
-        .execute(),
-      query
-        .where('unit', '=', 'supply')
-        .orderBy('type desc')
-        .selectAll()
-        .execute(),
-      query
-        .where('unit', '=', 'medical')
-        .orderBy('type desc')
-        .selectAll()
-        .execute(),
-      query
-        .where('unit', '=', 'transport')
-        .orderBy('type desc')
-        .selectAll()
-        .execute(),
-      query
-        .where('unit', 'is', null)
-        .orderBy('type desc')
-        .selectAll()
-        .execute(),
+
+  const query = type === 'enlisted' || type === 'nco' ? baseQuery.where('type', '=', type) : baseQuery;
+
+  const [headquarters, supply, medical, transport, unclassified] = await Promise.all([
+    query
+      .where('unit', '=', 'headquarters')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', '=', 'supply')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', '=', 'medical')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', '=', 'transport')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', 'is', null)
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
   ]);
   return { headquarters, supply, medical, transport, unclassified };
 }

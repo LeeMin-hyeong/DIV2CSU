@@ -4,12 +4,13 @@ import { useMemo } from 'react';
 
 export type PointsHistoryListProps = { 
   type: 'enlisted' | 'nco'; 
-  data: { id: string; verified_at: Date | null }[]; 
+  data: { id: string; verified_at: Date | null; rejected_at: Date | null; }[]; 
 };
 
 export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
   const unverified = data?.filter((d) => d.verified_at === null) || [];
   const verified = data?.filter((d) => d.verified_at !== null) || [];
+  const rejected = data?.filter((d) => d.rejected_at !== null) || [];
 
   const items = useMemo(() => {
     const enlistedItems = [];
@@ -22,14 +23,21 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
       });
     }
 
-    enlistedItems.push({
-      key: 'verified',
-      label: `상벌점 ${type === 'nco' ? '승인' : ''} 내역 (${verified.length})`,
-      children: verified.map((d) => <PointCard key={d.id} pointId={d.id} />),
-    });
+    enlistedItems.push(
+      {
+        key: 'rejected',
+        label: `상벌점 반려 내역 (${rejected.length})`,
+        children: rejected.map((d) => <PointCard key={d.id} pointId={d.id} />),
+      },
+      {
+        key: 'verified',
+        label: `상벌점 ${type === 'nco' ? '승인' : ''} 내역 (${verified.length})`,
+        children: verified.map((d) => <PointCard key={d.id} pointId={d.id} />),
+      },
+    );
 
     return enlistedItems;
-  }, [type, unverified, verified]);
+  }, [type, unverified, verified, rejected]);
 
   if (!data || data.length === 0) {
     return (
@@ -62,7 +70,7 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
       >
         <Collapse
           items={items}
-          defaultActiveKey={type === 'enlisted' ? ['unverified'] : ['verified']}
+          defaultActiveKey={type === 'enlisted' ? ['unverified', 'rejected'] : ['verified']}
         />
       </ConfigProvider>
     </div>

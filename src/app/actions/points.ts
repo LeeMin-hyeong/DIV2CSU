@@ -29,7 +29,7 @@ export async function listPoints(sn: string) {
   const [data, usedPoints] = await Promise.all([
     query
       .orderBy('created_at desc')
-      .select(['id', 'verified_at'])
+      .select(['id', 'verified_at', 'rejected_at'])
       .execute(),
     type === 'enlisted' &&
       kysely
