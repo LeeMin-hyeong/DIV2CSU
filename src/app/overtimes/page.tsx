@@ -1,7 +1,7 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { Divider, FloatButton } from 'antd';
-import { currentSoldier, fetchApproveOvertimes, fetchOvertime, fetchPendingOvertimes, fetchSoldier, listOvertimes} from '../actions';
+import { currentSoldier, fetchApproveOvertimes, fetchPendingOvertimes, fetchSoldier, listOvertimes} from '../actions';
 import { hasPermission } from '../actions/utils';
 import {
   OvertimeRequestList,
@@ -48,7 +48,6 @@ async function NcoPage({
         {showRequest && (
           <>
             <OvertimeRequestList type={'verify'} data={request}/>
-            <Divider />
           </>
         )}
         <OvertimeHistoryList
@@ -78,13 +77,11 @@ async function ApproverPage({
         {showRequest && (
           <>
             <OvertimeRequestList type={'approve'} data={approve}/>
-            <Divider />
           </>
         )}
         {showRequest && (
           <>
             <OvertimeRequestList type={'verify'} data={verify}/>
-            <Divider />
           </>
         )}
         <OvertimeHistoryList

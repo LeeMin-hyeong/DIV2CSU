@@ -1,4 +1,4 @@
-import { Collapse, ConfigProvider, Empty } from 'antd';
+import { Collapse, ConfigProvider } from 'antd';
 import { OvertimeRequestCard } from '.';
 import { useMemo } from 'react';
 import { fetchApproveOvertimes, fetchPendingOvertimes } from '@/app/actions';
@@ -10,7 +10,7 @@ type OvertimeRequestListProps = {
 
 export function OvertimeRequestList({ type, data }: OvertimeRequestListProps) {
   const items = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!data) return [];
     return [
       {
         key: 'requested',
@@ -21,20 +21,6 @@ export function OvertimeRequestList({ type, data }: OvertimeRequestListProps) {
       },
     ];
   }, [data, type]);
-
-  if (!data || data.length === 0) {
-    return (
-      <div className="py-5 my-5">
-        <Empty
-          description={
-            <p>
-              초과근무 {type === 'verify' ? '지시자' : '확인관'} 승인 요청이 없습니다
-            </p>
-          }
-        />
-      </div>
-    );
-  }
 
   return (
     <div>
