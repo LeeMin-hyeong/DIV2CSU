@@ -31,7 +31,7 @@ export default async function Home() {
               </div>
             </Card>
           </Link>
-          <Divider/>
+          <Divider style={{margin: '10px 0px'}}/>
         </div> : null}
         <Link href={`/points`}>
           <Card className='my-1 mx-1' size='small'>
@@ -53,7 +53,7 @@ export default async function Home() {
             </div>
           </Card>
         </Link>
-        <Divider/>
+        <Divider style={{margin: '10px 0px'}}/>
         <Link href={'/overtimes'}>
           {hasPermission(user.permissions, ['Approver']) ?
           <Card className='my-1 mx-1' size='small'>
@@ -97,7 +97,7 @@ export default async function Home() {
             </div>
           </Card>
         </Link>
-        <Divider />
+        <Divider style={{margin: '10px 0px'}}/>
         <Link href={'/overtimes'}>
           <TotalOvertimeBox user={user as any}/>
           <Card className='my-1 mx-1' size='small'>

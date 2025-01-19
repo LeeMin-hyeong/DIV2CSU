@@ -33,7 +33,7 @@ export function TotalOvertimeBox({ user }: { user: Soldier }) {
                 {Math.floor((data.overtime-data.usedOvertime)%1440/60)+'시간 '}
                 {(data.overtime-data.usedOvertime)%1440%60+'분'}
               </span>
-              <Divider/>
+              <Divider style={{margin: '10px 0px'}}/>
               <Flex vertical={false}>
                 <ClockCircleOutlined className='mx-2'/>
                 <Progress className='mx-2'

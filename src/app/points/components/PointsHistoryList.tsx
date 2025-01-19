@@ -1,4 +1,4 @@
-import { Collapse, ConfigProvider, Empty } from 'antd';
+import { Collapse, ConfigProvider } from 'antd';
 import { PointCard } from './PointCard';
 import { useMemo } from 'react';
 
@@ -38,22 +38,6 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
 
     return enlistedItems;
   }, [type, unverified, verified, rejected]);
-
-  if (!data || data.length === 0) {
-    return (
-      <div className='py-5 my-5'>
-        <Empty
-          description={
-            <p>
-              {type === 'enlisted'
-                ? '받은 상벌점이 없습니다'
-                : '부여한 상벌점이 없습니다'}
-            </p>
-          }
-        />
-      </div>
-    );
-  }
 
   return (
     <div>

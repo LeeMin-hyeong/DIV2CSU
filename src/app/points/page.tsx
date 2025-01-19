@@ -1,6 +1,6 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
-import { Divider, FloatButton } from 'antd';
+import { FloatButton } from 'antd';
 import { currentSoldier, fetchPendingPoints, fetchSoldier, hasPermission, listPoints } from '../actions';
 import {
   PointRequestList,
@@ -52,7 +52,6 @@ async function NcoPage({
           data={data}
         />
       </div>
-      <Divider />
       <FloatButton
         icon={<PlusOutlined />}
         href='/points/give'
