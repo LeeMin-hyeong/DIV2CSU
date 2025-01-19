@@ -17,9 +17,9 @@ export function OvertimeHistoryList({
   data,
   type,
 }: OvertimeHistoryListProps) {
-  const unverified = data?.filter((d) => d.verified_at === null) || [];
+  const unverified = data?.filter((d) => d.verified_at === null && d.rejected_at === null) || [];
   const approved = data?.filter((d) => d.approved_at !== null) || [];
-  const unapproved = data?.filter((d) => d.verified_at !== null && d.approved_at === null) || [];
+  const unapproved = data?.filter((d) => d.verified_at !== null && d.approved_at === null && d.disapproved_at === null) || [];
   const rejected = data?.filter((d) => d.disapproved_at !== null || d.rejected_at !== null) || [];
 
   const items = useMemo(() => {

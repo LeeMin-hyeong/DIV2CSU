@@ -8,7 +8,7 @@ export type PointsHistoryListProps = {
 };
 
 export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
-  const unverified = data?.filter((d) => d.verified_at === null) || [];
+  const unverified = data?.filter((d) => d.verified_at === null && d.rejected_at === null) || [];
   const verified = data?.filter((d) => d.verified_at !== null) || [];
   const rejected = data?.filter((d) => d.rejected_at !== null) || [];
 
