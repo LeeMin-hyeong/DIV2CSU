@@ -49,6 +49,8 @@ export const fetchSoldier = cache(async (sn: string) => {
       'soldiers.verified_at',
       'soldiers.deleted_at',
       'soldiers.rejected_at',
+      'soldiers.points',
+      'soldiers.overtimes',
       jsonArrayFrom(
         eb
           .selectFrom('permissions')
@@ -66,6 +68,8 @@ export const fetchSoldier = cache(async (sn: string) => {
     deleted_at:  data?.deleted_at as Date,
     rejected_at: data?.rejected_at as Date,
     permissions: (data?.permissions ?? []).map(({ value }: { value: Permission }) => value),
+    points:      data?.points as number,
+    overtimes:   data?.overtimes as number,
   };
 });
 
