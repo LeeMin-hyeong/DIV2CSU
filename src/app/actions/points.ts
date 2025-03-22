@@ -160,6 +160,23 @@ export async function verifyPoint(
         rejected_reason: rejectReason,
       })
       .executeTakeFirstOrThrow();
+    if(value){
+      const currentPoints = await kysely
+        .selectFrom('soldiers')
+        .where('sn', '=', point.receiver_id)
+        .select('points')
+        .executeTakeFirst();
+
+      if (currentPoints) {
+        await kysely
+          .updateTable('soldiers')
+          .where('sn', '=', point.receiver_id)
+          .set({
+            points: currentPoints.points + point.value,
+          })
+          .executeTakeFirstOrThrow();
+      }
+    }
     return { message: null };
   } catch (e) {
     return { message: '승인/반려에 실패하였습니다' };
@@ -187,6 +204,13 @@ export async function fetchPointSummary(sn: string) {
       .select((eb) => eb.fn.sum<string>('value').as('value'))
       .executeTakeFirst(),
   ]);
+  await kysely
+    .updateTable('soldiers')
+    .where('sn', '=', sn)
+    .set({
+      points: parseInt(meritData?.value ?? '0', 10) + parseInt(demeritData?.value ?? '0', 10) - parseInt(usedMeritData?.value ?? '0', 10),
+    })
+    .executeTakeFirstOrThrow();
   return {
     merit: parseInt(meritData?.value ?? '0', 10),
     demerit: parseInt(demeritData?.value ?? '0', 10),

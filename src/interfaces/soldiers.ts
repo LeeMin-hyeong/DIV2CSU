@@ -42,6 +42,12 @@ export const Soldier = z.object({
 
   // 유저 권한
   permissions: z.array(Permission),
+
+  // 사용가능 상점
+  points: z.number(),
+
+  // 사용가능 초과근무(분)
+  overtimes: z.number(),
 });
 
 export type Soldier = z.infer<typeof Soldier>;

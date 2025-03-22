@@ -216,6 +216,23 @@ export async function approveOvertime(
         disapproved_reason: disapprovedReason,
       })
       .executeTakeFirstOrThrow();
+    if(value){
+      const currentOvertimes = await kysely
+        .selectFrom('soldiers')
+        .where('sn', '=', overtime.receiver_id)
+        .select('overtimes')
+        .executeTakeFirst();
+
+      if (currentOvertimes) {
+        await kysely
+          .updateTable('soldiers')
+          .where('sn', '=', overtime.receiver_id)
+          .set({
+            points: currentOvertimes.overtimes + overtime.value,
+          })
+          .executeTakeFirstOrThrow();
+      }
+    }
     return { message: null };
   } catch (e) {
     return { message: '승인/반려에 실패하였습니다' };
@@ -242,6 +259,13 @@ export async function fetchOvertimeSummary(sn: string) {
       )
       .executeTakeFirstOrThrow(),
   ]);
+  await kysely
+    .updateTable('soldiers')
+    .where('sn', '=', sn)
+    .set({
+      points: parseInt(overtimeData?.value ?? '0', 10) - parseInt(usedOvertimeData?.value ?? '0', 10),
+    })
+    .executeTakeFirstOrThrow();
   return {
     overtime: parseInt(overtimeData?.value ?? '0', 10),
     usedOvertime: parseInt(usedOvertimeData?.value ?? '0', 10),
