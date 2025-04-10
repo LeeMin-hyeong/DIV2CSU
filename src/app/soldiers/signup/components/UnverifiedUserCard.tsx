@@ -3,6 +3,7 @@
 import { verifySoldier } from '@/app/actions';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { App, Button, Card, Popconfirm } from 'antd';
+import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
 export type UnverifiedUserCardProps = {
@@ -24,6 +25,7 @@ export function UnverifiedUserCard({
     rejected: '#ED2939',
   }[state];
   const { message } = App.useApp();
+  const router = useRouter();
 
   const handleClick = useCallback(
     (value: boolean) => async () => {
@@ -41,12 +43,13 @@ export function UnverifiedUserCard({
           setState('accepted');
           message.success(resultMessage);
         }
+        router.refresh();
       } else {
         message.error(resultMessage);
       }
       setLoading(false);
     },
-    [sn, message],
+    [sn, message, router],
   );
   
   //반려되지 않은 유저일 경우 반환

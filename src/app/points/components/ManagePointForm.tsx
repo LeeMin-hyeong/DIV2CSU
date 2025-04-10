@@ -2,8 +2,8 @@
 
 import {
   createPoint,
-  searchPointsGiver,
-  searchPointsReceiver,
+  searchEnlisted,
+  searchNco,
 } from '@/app/actions';
 import {
   App,
@@ -17,7 +17,8 @@ import {
 } from 'antd';
 import locale from 'antd/es/date-picker/locale/ko_KR';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { debounce } from 'lodash';
 import { PointTemplatesInput } from '../components';
 import { checkIfNco } from '../give/actions';
 
@@ -29,14 +30,12 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
   const [merit, setMerit] = useState(1);
   const [form] = Form.useForm();
   const router = useRouter();
-  const query = Form.useWatch(type === 'request' ? 'giverId' : 'receiverId', {
-    form,
-    preserve: true,
-  });
+  const [query, setQuery] = useState('');
   const [options, setOptions] = useState<{ name: string; sn: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { message } = App.useApp();
+  const [target, setTarget] = useState('')
 
   const renderPlaceholder = useCallback(
     ({ name, sn }: { name: string; sn: string }) => (
@@ -54,19 +53,27 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
     }
   }, [type]);
 
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setQuery(value);
+      }, 300),
+    [],
+  );
+
+  const handleSearch = (value: string) => {
+    debouncedSearch(value);
+  };
+
   useEffect(() => {
     setSearching(true);
-    if (type === 'request') {
-      searchPointsGiver(query || '').then((value) => {
-        setSearching(false);
-        setOptions(value as any);
-      });
-    } else {
-      searchPointsReceiver(query || '').then((value) => {
-        setSearching(false);
-        setOptions(value as any);
-      });
-    }
+    const searchFn =
+      type === 'request' ? searchNco : searchEnlisted;
+
+    searchFn(query).then((value) => {
+      setSearching(false);
+      setOptions(value);
+    });
   }, [query, type]);
 
   const handleSubmit = useCallback(
@@ -76,18 +83,19 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
       createPoint({
         ...newForm,
         value: merit * newForm.value,
-        givenAt: (newForm.givenAt.$d as Date).toISOString(),
+        givenAt: (newForm.givenAt.$d as Date),
       })
         .then(({ message: newMessage }) => {
           if (newMessage) {
             message.error(newMessage);
+          } else {
+            message.success(
+              type === 'request'
+                ? '상벌점 요청을 성공적으로 했습니다'
+                : '상벌점을 성공적으로 부여했습니다',
+            );
+            router.push('/points');
           }
-          message.success(
-            type === 'request'
-              ? '상벌점 요청을 성공적으로 했습니다'
-              : '상벌점을 성공적으로 부여했습니다',
-          );
-          router.push('/points');
         })
         .finally(() => {
           setLoading(false);
@@ -128,18 +136,29 @@ export function ManagePointForm({ type }: ManagePointFormProps) {
           />
         </Form.Item>
         <Form.Item<string>
-          label={type === 'request' ? '수여자' : '수령자'}
+          label={(type === 'request' ? '수여자' : '수령자') + (target !== '' ? `: ${target}` : '')}
           name={type === 'request' ? 'giverId' : 'receiverId'}
           rules={[
-            { required: true, message: '수령자를 입력해주세요' },
+            { required: true, message: `${type === 'request' ? '수여자' : '수령자'}를 입력해주세요` },
             { pattern: /^[0-9]{2}-[0-9]{5,8}$/, message: '잘못된 군번입니다' },
           ]}
         >
           <AutoComplete
+            onSearch={handleSearch} // Debounced search handler
             options={options.map((t) => ({
               value: t.sn,
               label: renderPlaceholder(t),
             }))}
+            onChange={(value) => {
+              const selectedOption = options.find((t) => t.sn === value);
+              if (selectedOption) {
+                setTarget(selectedOption.name); // 선택된 sn에 대응하는 name 설정
+              }
+              else {
+                setTarget('')
+              }
+            }}
+            getPopupContainer={c => c.parentElement}
           >
             <Input.Search loading={searching} />
           </AutoComplete>

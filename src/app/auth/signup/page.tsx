@@ -14,12 +14,15 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
 
   const onFinish = useCallback(async (form: SignUpForm) => {
+    if (form.password === form.sn) {
+      return setError('비밀번호는 군번일 수 없습니다')
+    }
     if (form.password !== form.passwordConfirmation) {
       return setError('비밀번호를 다시 한번 확인해주세요');
     }
     setLoading(true);
     const data = await signUp(form);
-    if (data.message) {
+    if (data) {
       message.error(data.message);
     }
     setLoading(false);
@@ -63,6 +66,18 @@ export default function SignUpPage() {
             />
           </Form.Item>
         </div>
+        <Form.Item<string>
+          name='unit'
+          initialValue='headquarters'
+        >
+          <Radio.Group className='flex flex-1'>
+              <Radio.Button value='headquarters'>본부</Radio.Button>
+              <Radio.Button value='supply'>보급</Radio.Button>
+              <Radio.Button value='medical'>의무</Radio.Button>
+              <Radio.Button value='transport'>수송</Radio.Button>
+              <Radio.Button value={null}>미분류</Radio.Button>
+          </Radio.Group>
+        </Form.Item>
         <Form.Item<string>
           name='name'
           rules={[{ required: true, message: '이름을 입력해주세요' }]}

@@ -21,6 +21,8 @@ export const Soldier = z.object({
   // 병사 (enlisted) / 장교 (nco)
   type: z.enum(['enlisted', 'nco']),
 
+  unit: z.enum(['headquarters', 'supply', 'medical', 'transport']).nullable(),
+
   // 이름 (Name)
   name: z
     .string()
@@ -40,6 +42,12 @@ export const Soldier = z.object({
 
   // 유저 권한
   permissions: z.array(Permission),
+
+  // 사용가능 상점
+  points: z.number(),
+
+  // 사용가능 초과근무(분)
+  overtimes: z.number(),
 });
 
 export type Soldier = z.infer<typeof Soldier>;

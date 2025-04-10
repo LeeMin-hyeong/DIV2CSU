@@ -8,15 +8,21 @@ datasource db {
 }
 
 model overtimes {
-  id          Int       @id @default(autoincrement())
-  giver_id    String    @db.VarChar(11)
-  receiver_id String    @db.VarChar(11)
-  created_at  DateTime  @default(now()) @db.Timestamp(0)
-  verified_at DateTime? @db.Timestamp(0)
-  value       Int       @db.SmallInt
-  reason      String?   @db.VarChar(1000)
-  started_at  DateTime  @db.Timestamp(0)
-  ended_at    DateTime  @db.Timestamp(0)
+  id                 Int       @id @default(autoincrement())
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  giver_id           String    @db.VarChar(11)
+  receiver_id        String    @db.VarChar(11)
+  approver_id        String    @db.VarChar(11)
+  verified_at        DateTime? @db.Timestamp(0)
+  approved_at        DateTime? @db.Timestamp(0)
+  started_at         DateTime  @db.Timestamp(0)
+  ended_at           DateTime  @db.Timestamp(0)
+  value              Int       @db.SmallInt
+  reason             String?   @db.VarChar(1000)
+  rejected_at        DateTime? @db.Timestamp(0)
+  rejected_reason    String?   @db.VarChar(1000)
+  disapproved_at     DateTime? @db.Timestamp(0)
+  disapproved_reason String?   @db.VarChar(1000)
 }
 
 model permissions {
@@ -62,6 +68,7 @@ model soldiers {
   created_at  DateTime      @default(now()) @db.Timestamp(0)
   password    String        @db.VarChar(200)
   verified_at DateTime?     @db.Timestamp(0)
+  unit        unit
   type        soldiers_type
   deleted_at  DateTime?     @db.Timestamp(0)
   rejected_at DateTime?     @db.Timestamp(0)
@@ -71,4 +78,11 @@ model soldiers {
 enum soldiers_type {
   enlisted
   nco
+}
+
+enum unit {
+  headquarters
+  supply
+  medical
+  transport
 }

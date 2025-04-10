@@ -1,8 +1,18 @@
+import { Permissions, Point, PointTemplates, Soldier, UsedPoint, Overtimes, UsedOvertime } from '@/interfaces';
 import { Kysely, PostgresDialect } from 'kysely';
-import { DB } from 'kysely-codegen';
 import { Pool } from 'pg';
 
-export const kysely = new Kysely<DB>({
+interface Database {
+  points:          Point,
+  soldiers:        Soldier,
+  permissions:     Permissions,
+  point_templates: PointTemplates,
+  used_points:     UsedPoint,
+  overtimes:       Overtimes,
+  used_overtimes:  UsedOvertime
+}
+
+export const kysely = new Kysely<Database>({
   dialect: new PostgresDialect({
     pool: new Pool({ connectionString: process.env.POSTGRES_URL }),
   }),

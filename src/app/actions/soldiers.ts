@@ -1,6 +1,6 @@
 'use server';
 
-import { Permission } from '@/interfaces';
+import { Permission} from '@/interfaces';
 import jwt from 'jsonwebtoken';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { cookies } from 'next/headers';
@@ -21,7 +21,7 @@ export async function unauthenticated_currentSoldier() {
     }) as {
       name: string;
       type: string;
-      sub: string;
+      sub:  string;
     };
   } catch (e) {
     cookies().delete('auth.access_token');
@@ -45,9 +45,12 @@ export const fetchSoldier = cache(async (sn: string) => {
       'soldiers.sn',
       'soldiers.name',
       'soldiers.type',
+      'soldiers.unit',
       'soldiers.verified_at',
       'soldiers.deleted_at',
       'soldiers.rejected_at',
+      'soldiers.points',
+      'soldiers.overtimes',
       jsonArrayFrom(
         eb
           .selectFrom('permissions')
@@ -57,17 +60,23 @@ export const fetchSoldier = cache(async (sn: string) => {
     ])
     .executeTakeFirst();
   return {
-    ...data,
-    permissions: (data?.permissions ?? []).map(
-      ({ value }) => value as Permission,
-    ),
+    sn:          data?.sn as string,
+    name:        data?.name as string,
+    type:        data?.type as ('nco' | 'enlisted'),
+    unit:        data?.unit as ('headquarters' | 'supply' | 'medical' | 'transport' | null),
+    verified_at: data?.verified_at as Date,
+    deleted_at:  data?.deleted_at as Date,
+    rejected_at: data?.rejected_at as Date,
+    permissions: (data?.permissions ?? []).map(({ value }: { value: Permission }) => value),
+    points:      data?.points as number,
+    overtimes:   data?.overtimes as number,
   };
 });
 
 export async function listUnverifiedSoldiers() {
   const current = await currentSoldier();
   if (
-    !hasPermission(current.permissions, ['Admin', 'UserAdmin', 'VerifyUser'])
+    !hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])
   ) {
     return { message: '권한이 없습니다', data: null };
   }
@@ -80,11 +89,21 @@ export async function listUnverifiedSoldiers() {
   return { message: null, data };
 }
 
+export async function fetchUnverifiedSoldiersCount() {
+  const { count } = await kysely
+    .selectFrom('soldiers')
+    .where('verified_at', 'is', null)
+    .where('rejected_at', 'is', null)
+    .select((eb) => eb.fn.count<number>('sn').as('count'))
+    .executeTakeFirstOrThrow();
+  return count;
+}
+
 export async function verifySoldier(sn: string, value: boolean) {
   try {
     const current = await currentSoldier();
     if (
-      !hasPermission(current.permissions, ['Admin', 'UserAdmin', 'VerifyUser'])
+      !hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])
     ) {
       return {
         success: false,
@@ -109,40 +128,62 @@ export async function verifySoldier(sn: string, value: boolean) {
   }
 }
 
-export async function listSoldiers({
-  query,
-  page,
-}: {
-  query?: string | null;
-  page?: number | null;
-}) {
-  await currentSoldier();
-  const [{ count }, data] = await Promise.all([
-    kysely
-      .selectFrom('soldiers')
-      .select((eb) => eb.fn.count<string>('sn').as('count'))
-      .executeTakeFirstOrThrow(),
-    kysely
-      .selectFrom('soldiers')
-      .where((eb) =>
-        eb.and([
-          eb.or([eb('sn', '=', query ?? ''), eb('name', 'like', `%${query}%`)]),
-          eb.or([
-            eb('rejected_at', 'is not', null),
-            eb('verified_at', 'is not', null),
-          ]),
-          eb('deleted_at', 'is', null), // 삭제된 유저 제외
-        ]),
-      )
-      .limit(10)
-      .$if(page != null, (qb) => qb.offset(Math.max(1, page!) * 10 - 10))
-      .select(['sn', 'name', 'type', 'deleted_at', 'rejected_at'])
-      .execute(),
-  ]);
-  return { count: parseInt(count, 10), data };
+export async function listSoldiers({ query, type }: { query?: string | null, type: string }) {
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb.or([eb('sn', 'like', `%${query}%`), eb('name', 'like', `%${query}%`)]),
+        eb('rejected_at', 'is', null),
+        eb('verified_at', 'is not', null),
+        eb('deleted_at', 'is', null),
+        ...(type === 'enlisted' || type === 'nco' ? [eb('type', '=', type)] : []),
+      ]),
+    )
+    .selectAll()
+    .execute();
 }
 
-export async function searchPointsReceiver(query: string) {
+export async function GroupSoldiers(type: string) {
+  const baseQuery = kysely
+    .selectFrom('soldiers')
+    .where('rejected_at', 'is', null)
+    .where('verified_at', 'is not', null)
+    .where('deleted_at', 'is', null);
+
+  const query = type === 'enlisted' || type === 'nco' ? baseQuery.where('type', '=', type) : baseQuery;
+
+  const [headquarters, supply, medical, transport, unclassified] = await Promise.all([
+    query
+      .where('unit', '=', 'headquarters')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', '=', 'supply')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', '=', 'medical')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', '=', 'transport')
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+    query
+      .where('unit', 'is', null)
+      .orderBy('type desc')
+      .selectAll()
+      .execute(),
+  ]);
+  return { headquarters, supply, medical, transport, unclassified };
+}
+
+export async function searchEnlisted(query: string) {
   return kysely
     .selectFrom('soldiers')
     .where((eb) =>
@@ -156,13 +197,35 @@ export async function searchPointsReceiver(query: string) {
           eb('rejected_at', 'is not', null),
           eb('verified_at', 'is not', null),
         ]),
+        eb('deleted_at', 'is', null),
       ]),
     )
     .select(['sn', 'name'])
     .execute();
 }
 
-export async function searchPointsGiver(query: string) {
+export async function searchNco(query: string) {
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb('type', '=', 'nco'),
+        eb.or([
+          eb('sn', 'like', `%${query}%`),
+          eb('name', 'like', `%${query}%`),
+        ]),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
+        ]),
+        eb('deleted_at', 'is', null),
+      ]),
+    )
+    .select(['sn', 'name'])
+    .execute();
+}
+
+export async function searchCommander(query: string) {
   return kysely
     .selectFrom('soldiers')
     .where((eb) =>
@@ -181,11 +244,7 @@ export async function searchPointsGiver(query: string) {
             .selectFrom('permissions')
             .whereRef('permissions.soldiers_id', '=', 'soldiers.sn')
             .having('value', 'in', [
-              'GiveMeritPoint',
-              'GiveLargeMeritPoint',
-              'GiveDemeritPoint',
-              'GiveLargeDemeritPoint',
-              'PointAdmin',
+              'Commander',
               'Admin',
             ])
             .select('permissions.value')
@@ -197,11 +256,42 @@ export async function searchPointsGiver(query: string) {
     .execute();
 }
 
+export async function searchApprover(query: string = '') {
+  const current = await currentSoldier();
+  return kysely
+    .selectFrom('soldiers')
+    .where((eb) =>
+      eb.and([
+        eb('type', '=', 'nco'),
+        eb('unit', '=', current.unit),
+        eb.or([
+          eb('sn', 'like', `%${query}%`),
+          eb('name', 'like', `%${query}%`),
+        ]),
+        eb.or([
+          eb('rejected_at', 'is not', null),
+          eb('verified_at', 'is not', null),
+        ]),
+        eb('deleted_at', 'is', null),
+        eb.exists(
+          eb
+            .selectFrom('permissions')
+            .whereRef('permissions.soldiers_id', '=', 'soldiers.sn')
+            .having('value', '=', 'Approver')
+            .select('permissions.value')
+            .groupBy('permissions.value')
+        ),
+      ])
+    )
+    .select(['sn', 'name'])
+    .execute();
+}
+
 export async function deleteSoldier({
   sn,
   value,
 }: {
-  sn: string;
+  sn:    string;
   value: boolean;
 }) {
   const { sn: requestSn, permissions } = await currentSoldier();
@@ -218,7 +308,7 @@ export async function deleteSoldier({
   if (target.permissions.includes('Admin')) {
     return { message: '관리자는 삭제할 수 없습니다' };
   }
-  if (!hasPermission(permissions, ['Admin', 'UserAdmin', 'DeleteUser'])) {
+  if (!hasPermission(permissions, ['Admin', 'Commander', 'UserAdmin'])) {
     return { message: '유저 삭제 권한이 없습니다' };
   }
   await kysely
@@ -229,3 +319,29 @@ export async function deleteSoldier({
   return { message: null };
 }
 
+export async function updateUnit({sn, unit}: {sn: string, unit: 'headquarters' | 'supply' | 'medical' | 'transport' | null}){
+  const current = await currentSoldier();
+  if (sn === current.sn) {
+    return { message: '본인 정보는 수정할 수 없습니다' };
+  }
+  const target = await fetchSoldier(sn);
+  if (target.unit === unit){
+    return { message: null };
+  }
+  if (hasPermission(target.permissions, ['Admin'])) {
+    return { message: '관리자는 수정할 수 없습니다' };
+  }
+  if (!hasPermission(current.permissions, ['Admin', 'Commander', 'UserAdmin'])) {
+    return { message: '소속 수정 권한이 없습니다' };
+  }
+  try {
+    await kysely
+    .updateTable('soldiers')
+    .where('sn', '=', sn)
+    .set({ unit: unit })
+    .executeTakeFirstOrThrow();
+    return { message: null };
+  } catch (e) {
+    return { message: '소속 변경에 실패하였습니다' };
+  }
+}
