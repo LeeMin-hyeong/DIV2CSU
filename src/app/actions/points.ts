@@ -364,6 +364,23 @@ export async function redeemPoint({
         value,
       } as any)
       .executeTakeFirstOrThrow();
+    if(value){
+      const currentPoints = await kysely
+        .selectFrom('soldiers')
+        .where('sn', '=', userId)
+        .select('points')
+        .executeTakeFirst();
+
+      if (currentPoints) {
+        await kysely
+          .updateTable('soldiers')
+          .where('sn', '=', userId)
+          .set({
+            points: currentPoints.points - value,
+          })
+          .executeTakeFirstOrThrow();
+      }
+    }
     return { message: null };
   } catch (e) {
     return { message: '알 수 없는 오류가 발생했습니다' };
