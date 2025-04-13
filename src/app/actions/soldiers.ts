@@ -140,6 +140,8 @@ export async function listSoldiers({ query, type }: { query?: string | null, typ
         ...(type === 'enlisted' || type === 'nco' ? [eb('type', '=', type)] : []),
       ]),
     )
+    .orderBy('type desc')
+    .orderBy('name asc')
     .selectAll()
     .execute();
 }
@@ -157,26 +159,31 @@ export async function GroupSoldiers(type: string) {
     query
       .where('unit', '=', 'headquarters')
       .orderBy('type desc')
+      .orderBy('name asc')
       .selectAll()
       .execute(),
     query
       .where('unit', '=', 'supply')
       .orderBy('type desc')
+      .orderBy('name asc')
       .selectAll()
       .execute(),
     query
       .where('unit', '=', 'medical')
       .orderBy('type desc')
+      .orderBy('name asc')
       .selectAll()
       .execute(),
     query
       .where('unit', '=', 'transport')
       .orderBy('type desc')
+      .orderBy('name asc')
       .selectAll()
       .execute(),
     query
       .where('unit', 'is', null)
       .orderBy('type desc')
+      .orderBy('name asc')
       .selectAll()
       .execute(),
   ]);
