@@ -176,6 +176,23 @@ export async function verifyOvertime(
         rejected_reason: rejectReason,
       })
       .executeTakeFirstOrThrow();
+    if(value){
+      const currentOvertimes = await kysely
+        .selectFrom('soldiers')
+        .where('sn', '=', current.sn)
+        .select('overtimes')
+        .executeTakeFirst();
+
+      if (currentOvertimes) {
+        await kysely
+          .updateTable('soldiers')
+          .where('sn', '=', current.sn)
+          .set({
+            overtimes: currentOvertimes.overtimes + overtime.value,
+          })
+          .executeTakeFirstOrThrow();
+      }
+    }
     return { message: null };
   } catch (e) {
     return { message: '승인/반려에 실패하였습니다' };
@@ -341,10 +358,10 @@ export async function redeemOvertime({
     return { message: '초과근무 사용 이유를 작성해주세요' };
   }
   if (value !== Math.round(value)) {
-    return { message: '휴가일수는 정수여야 합니다' };
+    return { message: '사용시간은 정수여야 합니다' };
   }
   if (value <= 0) {
-    return { message: '1일 이상이어야합니다' };
+    return { message: '1시간 이상이어야 합니다' };
   }
   const { type, sn, permissions } = await currentSoldier();
   if (sn == null) {
@@ -386,7 +403,7 @@ export async function redeemOvertime({
         )
         .executeTakeFirstOrThrow(),
     ]);
-    if (parseInt(total, 10) - parseInt(used_overtimes, 10) < value*60) {
+    if (parseInt(total, 10) - parseInt(used_overtimes, 10) < value) {
       return { message: '초과근무 시간이 부족합니다' };
     }
     await kysely
@@ -398,6 +415,23 @@ export async function redeemOvertime({
         value,
       } as any)
       .executeTakeFirstOrThrow();
+    if(value){
+      const currentOvertimes = await kysely
+        .selectFrom('soldiers')
+        .where('sn', '=', userId)
+        .select('overtimes')
+        .executeTakeFirst();
+
+      if (currentOvertimes) {
+        await kysely
+          .updateTable('soldiers')
+          .where('sn', '=', userId)
+          .set({
+            overtimes: currentOvertimes.overtimes - value,
+          })
+          .executeTakeFirstOrThrow();
+      }
+    }
     return { message: null };
   } catch (e) {
     return { message: '알 수 없는 오류가 발생했습니다' };
