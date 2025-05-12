@@ -9,9 +9,10 @@ import { useCallback, useLayoutEffect, useState } from 'react';
 
 export type OvertimeCardProps = {
   overtimeId: string;
+  type: 'nco' | 'enlisted'
 };
 
-export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
+export function OvertimeCard({ overtimeId, type }: OvertimeCardProps) {
   const router = useRouter();
   const [overtime, setPoint] = useState<
     Awaited<ReturnType<typeof fetchOvertime>> | undefined
@@ -98,7 +99,7 @@ export function OvertimeCard({ overtimeId }: OvertimeCardProps) {
             </p>
             <p>{overtime?.reason}</p>
           </div>
-          {overtime?.verified_at || overtime?.approved_at ? null : (
+          {type == 'nco' || overtime?.verified_at || overtime?.approved_at ? null : (
             <Popconfirm
               title='삭제하시겠습니까?'
               okText='삭제'

@@ -111,12 +111,12 @@ export function MenuLayout({
             } : null,
             {
               key: '/points/#',
-              label: '상점',
+              label: '상벌점',
               icon: <LikeOutlined />,
               children: [
                 {
                   key: '/points',
-                  label: '상점 관리',
+                  label: '상벌점 관리',
                   icon: <ContainerOutlined />,
                   onClick,
                 },
@@ -124,7 +124,7 @@ export function MenuLayout({
                 data.type === 'enlisted' ?
                 {
                   key: '/points/request',
-                  label: '상점 요청',
+                  label: '상벌점 요청',
                   icon: <MailOutlined />,
                   onClick,
                 } : null,
@@ -137,7 +137,7 @@ export function MenuLayout({
                 ]) ?
                 {
                   key: '/points/give',
-                  label: '상점 부여',
+                  label: '상벌점 부여',
                   icon: <SendOutlined />,
                   onClick,
                 } : null,
@@ -221,7 +221,7 @@ export function MenuLayout({
               left: 0,
               top: 60,
               bottom: 0,
-              zIndex: 2,
+              zIndex: 3,
             }}
             collapsible
             collapsed={collapsed}

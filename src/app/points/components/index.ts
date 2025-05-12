@@ -6,4 +6,4 @@ export * from './PointTemplatesInput';
 export * from './PointsHistoryList';
 export * from './TotalPointBox';
 export * from './UsedPointsList';
-
+export * from './RedeemedPointList';

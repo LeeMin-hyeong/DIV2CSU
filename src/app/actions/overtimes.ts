@@ -437,3 +437,14 @@ export async function redeemOvertime({
     return { message: '알 수 없는 오류가 발생했습니다' };
   }
 }
+
+export async function fetchRedeemedOvertime() {
+  const { sn } = await currentSoldier();
+  return kysely
+    .selectFrom('used_overtimes')
+    .where('recorded_by', '=', sn!)
+    .leftJoin('soldiers', 'soldiers.sn', 'used_overtimes.user_id')
+    .select('soldiers.name as receiver')
+    .selectAll(['used_overtimes'])
+    .execute();
+}

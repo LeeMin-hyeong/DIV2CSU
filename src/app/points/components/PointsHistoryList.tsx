@@ -19,7 +19,7 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
       enlistedItems.push({
         key: 'unverified',
         label: `상벌점 요청 내역 (${unverified.length})`,
-        children: unverified.map((d) => <PointCard key={d.id} pointId={d.id} />),
+        children: unverified.map((d) => <PointCard key={d.id} pointId={d.id} type={type}/>),
       });
     }
 
@@ -27,12 +27,12 @@ export function PointsHistoryList({ data, type }: PointsHistoryListProps) {
       {
         key: 'rejected',
         label: `상벌점 반려 내역 (${rejected.length})`,
-        children: rejected.map((d) => <PointCard key={d.id} pointId={d.id} />),
+        children: rejected.map((d) => <PointCard key={d.id} pointId={d.id} type={type}/>),
       },
       {
         key: 'verified',
         label: `상벌점 ${type === 'nco' ? '승인' : ''} 내역 (${verified.length})`,
-        children: verified.map((d) => <PointCard key={d.id} pointId={d.id} />),
+        children: verified.map((d) => <PointCard key={d.id} pointId={d.id} type={type}/>),
       },
     );
 
