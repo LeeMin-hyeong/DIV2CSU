@@ -21,7 +21,7 @@ export const Soldier = z.object({
   // 병사 (enlisted) / 장교 (nco)
   type: z.enum(['enlisted', 'nco']),
 
-  unit: z.enum(['headquarters', 'supply', 'medical', 'transport']).nullable(),
+  unit: z.enum(['headquarters', 'supply', 'medical', 'transport', 'unclassified']),
 
   // 이름 (Name)
   name: z

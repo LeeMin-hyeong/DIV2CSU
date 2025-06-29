@@ -43,7 +43,7 @@ export default function MyProfilePage({
   const [helpShown, setHelpShwon] = useState(false);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [newPassword, setNewPassword] = useState<string | null>(null);
-  const [unit, setUnit] = useState<'headquarters' | 'supply' | 'medical' | 'transport' | null>(null)
+  const [unit, setUnit] = useState<'headquarters' | 'supply' | 'medical' | 'transport' | 'unclassified'>('unclassified')
 
   useLayoutEffect(() => {
     Promise.all([currentSoldier(), sn ? fetchSoldier(sn) : null]).then(
@@ -169,7 +169,7 @@ export default function MyProfilePage({
       <UnitTransfer 
         unit={unit}
         onchange={(u) => setUnit(u)}
-        disabled={!hasPermission(current!.permissions, ['Admin', 'Commander', 'UserAdmin'])}
+        disabled={isViewingMine || !hasPermission(current!.permissions, ['Admin', 'Commander', 'UserAdmin'])}
       />
       {(!isViewingMine && hasPermission(current!?.permissions, ['Admin', 'Commander'])) ? (
         <div className='pb-2'>

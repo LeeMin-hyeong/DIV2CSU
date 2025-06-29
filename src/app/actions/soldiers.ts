@@ -63,7 +63,7 @@ export const fetchSoldier = cache(async (sn: string) => {
     sn:          data?.sn as string,
     name:        data?.name as string,
     type:        data?.type as ('nco' | 'enlisted'),
-    unit:        data?.unit as ('headquarters' | 'supply' | 'medical' | 'transport' | null),
+    unit:        data?.unit as ('headquarters' | 'supply' | 'medical' | 'transport' | 'unclassified'),
     verified_at: data?.verified_at as Date,
     deleted_at:  data?.deleted_at as Date,
     rejected_at: data?.rejected_at as Date,
@@ -181,7 +181,7 @@ export async function GroupSoldiers(type: string) {
       .selectAll()
       .execute(),
     query
-      .where('unit', 'is', null)
+      .where('unit', 'is', 'unclassified')
       .orderBy('type desc')
       .orderBy('name asc')
       .selectAll()
@@ -326,7 +326,7 @@ export async function deleteSoldier({
   return { message: null };
 }
 
-export async function updateUnit({sn, unit}: {sn: string, unit: 'headquarters' | 'supply' | 'medical' | 'transport' | null}){
+export async function updateUnit({sn, unit}: {sn: string, unit: 'headquarters' | 'supply' | 'medical' | 'transport' | 'unclassified'}){
   const current = await currentSoldier();
   if (sn === current.sn) {
     return { message: '본인 정보는 수정할 수 없습니다' };

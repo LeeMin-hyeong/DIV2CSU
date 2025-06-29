@@ -13,6 +13,8 @@ import {
   Form,
   Input,
   InputNumber,
+  Radio,
+  RadioChangeEvent,
 } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
@@ -134,6 +136,30 @@ export default function UsePointFormPage() {
             <Input.Search loading={searching} />
           </AutoComplete>
         </Form.Item>
+        <Form.Item>
+          <Radio.Group
+            className="flex flex-1 pb-"
+            onChange={(e: RadioChangeEvent) => {
+              if(e.target.value == "1"){
+                form.setFieldValue('value', 16);
+                form.setFieldValue('reason', '포상 외출 사용')
+              }
+              if(e.target.value == "2"){
+                form.setFieldValue('value', 32);
+                form.setFieldValue('reason', '포상 외박 사용')
+              }
+              if(e.target.value == "3"){
+                form.setFieldValue('value', 48);
+                form.setFieldValue('reason', `포상 휴가 1일 사용`)
+              }
+            }}
+            block
+          >
+            <Radio.Button value="1">외출</Radio.Button>
+            <Radio.Button value="2">외박</Radio.Button>
+            <Radio.Button value="3">휴가 1일</Radio.Button>
+          </Radio.Group>
+        </Form.Item>
         <Form.Item<number>
           name='value'
           rules={[
@@ -156,6 +182,7 @@ export default function UsePointFormPage() {
             }
             type='number'
             inputMode='numeric'
+            style={{ width: '100%' }}
             onChange={(value) => {
               if(value != null && value == 16){
                 form.setFieldValue('reason', '포상 외출 사용')

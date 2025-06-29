@@ -35,6 +35,16 @@ export default function ManageSoldiersPage() {
     updateQuery(event.target.value);
   };
 
+  const [activeKey, setActiveKey] = useState<string[]>(
+    () => JSON.parse(localStorage.getItem('collapseKeys') || '[]')
+  );
+
+  const handleCollapseChange = (keys: string | string[]) => {
+    const updated = Array.isArray(keys) ? keys : [keys];
+    setActiveKey(updated);
+    localStorage.setItem('collapseKeys', JSON.stringify(updated));
+  };
+
   useEffect(() => {
     if (query !== '') {
       listSoldiers({ query, type }).then((data) => {
@@ -120,7 +130,11 @@ export default function ManageSoldiersPage() {
             },
           }}
         >
-          <Collapse items={items} />
+          <Collapse
+            activeKey={activeKey}
+            onChange={handleCollapseChange}
+            items={items}
+          />
         </ConfigProvider>
       )}
     </div>
