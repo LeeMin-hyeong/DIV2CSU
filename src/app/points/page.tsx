@@ -1,10 +1,11 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
 import { FloatButton } from 'antd';
-import { currentSoldier, fetchPendingPoints, fetchSoldier, hasPermission, listPoints } from '../actions';
+import { currentSoldier, fetchPendingPoints, fetchRedeemedPoint, fetchSoldier, hasPermission, listPoints } from '../actions';
 import {
   PointRequestList,
   PointsHistoryList,
+  RedeemedPointList,
   TotalPointBox,
   UsedPointsList,
 } from './components';
@@ -38,7 +39,8 @@ async function NcoPage({
   showRequest: boolean;
 }) {
   const { data } = await listPoints(user?.sn);
-  const request = await fetchPendingPoints()
+  const request = await fetchPendingPoints();
+  const redeemed = await fetchRedeemedPoint();
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
@@ -47,6 +49,9 @@ async function NcoPage({
             <PointRequestList data={request}/>
           </>
         )}
+        {hasPermission(user.permissions, ['Admin', 'Commander']) &&
+          <RedeemedPointList data={redeemed}/>
+        }
         <PointsHistoryList
           type={user.type}
           data={data}

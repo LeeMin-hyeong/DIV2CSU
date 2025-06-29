@@ -1,13 +1,14 @@
 import { Soldier } from '@/interfaces';
 import { PlusOutlined } from '@ant-design/icons';
-import { Divider, FloatButton } from 'antd';
-import { currentSoldier, fetchApproveOvertimes, fetchPendingOvertimes, fetchSoldier, listOvertimes} from '../actions';
+import { FloatButton } from 'antd';
+import { currentSoldier, fetchApproveOvertimes, fetchPendingOvertimes, fetchRedeemedOvertime, fetchSoldier, listOvertimes} from '../actions';
 import { hasPermission } from '../actions/utils';
 import {
   OvertimeRequestList,
   OvertimeHistoryList,
   TotalOvertimeBox,
   UsedOvertimeList,
+  RedeemedOvertimeList,
 } from './components';
 import { redirect } from 'next/navigation';
 
@@ -42,9 +43,13 @@ async function NcoPage({
 }) {
   const { data } = await listOvertimes(user?.sn, page);
   const request = await fetchPendingOvertimes();
+  const redeemed = await fetchRedeemedOvertime();
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
+        {hasPermission(user.permissions, ['Admin', 'Commander']) &&
+          <RedeemedOvertimeList data={redeemed}/>
+        }
         {showRequest && (
           <>
             <OvertimeRequestList type={'verify'} data={request}/>
@@ -74,6 +79,7 @@ async function ApproverPage({
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
+        
         {showRequest && (
           <>
             <OvertimeRequestList type={'approve'} data={approve}/>

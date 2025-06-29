@@ -68,14 +68,15 @@ export default function SignUpPage() {
         </div>
         <Form.Item<string>
           name='unit'
-          initialValue='headquarters'
+          // initialValue='headquarters'
+          rules={[{ required: true, message: '소속을 선택해주세요' }]}
         >
-          <Radio.Group className='flex flex-1'>
-              <Radio.Button value='headquarters'>본부</Radio.Button>
-              <Radio.Button value='supply'>보급</Radio.Button>
-              <Radio.Button value='medical'>의무</Radio.Button>
-              <Radio.Button value='transport'>수송</Radio.Button>
-              <Radio.Button value={null}>미분류</Radio.Button>
+          <Radio.Group className='flex flex-1' block>
+            <Radio.Button value='headquarters'>본부</Radio.Button>
+            <Radio.Button value='supply'>보급</Radio.Button>
+            <Radio.Button value='medical'>의무</Radio.Button>
+            <Radio.Button value='transport'>수송</Radio.Button>
+            <Radio.Button value='unclassified'>미분류</Radio.Button>
           </Radio.Group>
         </Form.Item>
         <Form.Item<string>
