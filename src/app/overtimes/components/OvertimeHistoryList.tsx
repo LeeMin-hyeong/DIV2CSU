@@ -30,12 +30,12 @@ export function OvertimeHistoryList({
       newItems.push({
         key: 'unapproved',
         label: `초과근무 확인관 승인 대기 내역 (${unapproved.length})`,
-        children: unapproved.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} />),
+        children: unapproved.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} type={type}/>),
       });
       newItems.push({
         key: 'unverified',
         label: `초과근무 지시자 승인 대기 내역 (${unverified.length})`,
-        children: unverified.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} />),
+        children: unverified.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} type={type}/>),
       });
     }
 
@@ -43,12 +43,12 @@ export function OvertimeHistoryList({
       {
         key: 'rejected',
         label: `초과근무 반려 내역 (${rejected.length})`,
-        children: rejected.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} />),
+        children: rejected.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} type={type}/>),
       },
       {
         key: 'approved',
         label: `초과근무 ${type === 'nco' ? '승인' : ''} 내역 (${approved.length})`,
-        children: approved.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} />),
+        children: approved.map((d) => <OvertimeCard key={d.id} overtimeId={d.id} type={type}/>),
       },
     );
 
