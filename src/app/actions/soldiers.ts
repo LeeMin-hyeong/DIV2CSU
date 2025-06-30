@@ -181,7 +181,7 @@ export async function GroupSoldiers(type: string) {
       .selectAll()
       .execute(),
     query
-      .where('unit', 'is', 'unclassified')
+      .where('unit', '=', 'unclassified')
       .orderBy('type desc')
       .orderBy('name asc')
       .selectAll()

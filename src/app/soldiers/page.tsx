@@ -173,14 +173,14 @@ export default function MyProfilePage({
       />
       {(!isViewingMine && hasPermission(current!?.permissions, ['Admin', 'Commander'])) ? (
         <div className='pb-2'>
-          <Button href={`/points?sn=${targetSoldier.sn}`}>
+          <Button href={`/points?sn=${targetSoldier.sn}`} block>
             상점 내역 보기
           </Button>
         </div>
       ): null}
       {(!isViewingMine && hasPermission(current!?.permissions, ['Admin', 'Commander'])) ? (
         <div className='pb-2'>
-          <Button href={`/overtimes?sn=${targetSoldier.sn}`}>
+          <Button href={`/overtimes?sn=${targetSoldier.sn}`} block>
             초과근무 내역 보기
           </Button>
         </div>
