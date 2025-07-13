@@ -112,7 +112,7 @@ export async function signIn({
   // 비밀번호가 초기화되어 자신의 군번과 동일한 경우
   // 비밀번호 변경 창으로 연결
   if(password == sn){
-    redirect('/soldiers/resetPassword')
+    redirect('/soldiers/resetpassword')
   }
   redirect('/');
 }
