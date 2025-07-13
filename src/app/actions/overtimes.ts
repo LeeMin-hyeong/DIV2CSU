@@ -17,7 +17,7 @@ export async function fetchOvertime(overtimeId: string) {
     .executeTakeFirst();
 }
 
-export async function listOvertimes(sn: string, page: number = 0) {
+export async function listOvertimes(sn: string) {
   const { type } = await kysely
     .selectFrom('soldiers')
     .where('sn', '=', sn)
@@ -438,8 +438,7 @@ export async function redeemOvertime({
   }
 }
 
-export async function fetchRedeemedOvertime() {
-  const { sn } = await currentSoldier();
+export async function fetchRedeemedOvertime(sn: string) {
   return kysely
     .selectFrom('used_overtimes')
     .where('recorded_by', '=', sn!)
