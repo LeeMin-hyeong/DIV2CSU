@@ -40,7 +40,7 @@ async function NcoPage({
 }) {
   const { data } = await listPoints(user?.sn);
   const request = await fetchPendingPoints();
-  const redeemed = await fetchRedeemedPoint();
+  const redeemed = await fetchRedeemedPoint(user?.sn);
   return (
     <div className='flex flex-1 flex-col'>
       <div className='flex-1 mb-2'>
